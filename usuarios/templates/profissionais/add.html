@@ -1,0 +1,1046 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Profissional - TimeFlow</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --info-color: #4895ef;
+            --warning-color: #f72585;
+            --light-bg: #f5f7fb;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --hover-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--light-bg), #ffffff);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #2d3748;
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+        }
+        
+        .card:hover {
+            box-shadow: var(--hover-shadow);
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            border-bottom: none;
+            padding: 2rem;
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+        
+        .card-body {
+            padding: 2rem;
+        }
+        
+        .form-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .form-section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .btn {
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 0.75rem 2rem;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(67, 97, 238, 0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3);
+        }
+        
+        .form-control, .form-select {
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 0.5rem;
+        }
+        
+        .required-field::after {
+            content: " *";
+            color: #e74c3c;
+        }
+        
+        /* Password strength */
+        .password-strength {
+            height: 5px;
+            margin-top: 5px;
+            border-radius: 3px;
+        }
+        .strength-0 {
+            background-color: #dc3545;
+            width: 20%;
+        }
+        .strength-1 {
+            background-color: #fd7e14;
+            width: 40%;
+        }
+        .strength-2 {
+            background-color: #ffc107;
+            width: 60%;
+        }
+        .strength-3 {
+            background-color: #28a745;
+            width: 80%;
+        }
+        .strength-4 {
+            background-color: #20c997;
+            width: 100%;
+        }
+        
+        /* Terms and conditions */
+        .terms-section {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .terms-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .terms-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* Modal styles */
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-bottom: none;
+            border-radius: 20px 20px 0 0;
+        }
+        
+        /* Footer */
+        .footer {
+            margin-top: 3rem;
+            padding: 1.5rem;
+            text-align: center;
+            color: #718096;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem 0;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            .form-section {
+                padding: 1rem;
+            }
+        }
+        
+        /* Input groups */
+        .input-group-text {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-right: none;
+        }
+        
+        .input-group .form-control {
+            border-left: none;
+        }
+        
+        /* Validation states */
+        .is-valid {
+            border-color: #28a745 !important;
+        }
+        
+        .is-invalid {
+            border-color: #e74c3c !important;
+        }
+        
+        .invalid-feedback {
+            font-size: 0.85rem;
+        }
+        
+        /* Password requirements list */
+        .password-requirements ul {
+            padding-left: 1.5rem;
+            margin-bottom: 0;
+        }
+        
+        .password-requirements li {
+            margin-bottom: 0.25rem;
+            font-size: 0.85rem;
+        }
+
+        /* Horário calculado */
+        .horario-calculado {
+            background: #e8f5e8;
+            border: 1px solid #28a745;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        /* Match indicator */
+        .password-match {
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+        .match-valid {
+            color: #28a745;
+        }
+        .match-invalid {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex align-items-center justify-content-center gap-3">
+                    <i class="fas fa-user-plus fa-2x"></i>
+                    <div>
+                        <h1 class="h3 mb-0">Cadastro de Profissional</h1>
+                        <p class="mb-0 opacity-75">Sistema TimeFlow - Ponto Eletrônico</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <form method="POST" id="cadastroForm">
+                    {% csrf_token %}
+                    
+                    <!-- Mensagens de erro gerais -->
+                    {% if user_form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        {{ user_form.non_field_errors }}
+                    </div>
+                    {% endif %}
+
+                    <!-- Seção: Dados de Acesso -->
+                    <div class="form-section">
+                        <h4 class="form-section-title">
+                            <i class="fas fa-key me-2"></i>Dados de Acesso
+                        </h4>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ user_form.username.id_for_label }}" class="form-label required-field">
+                                        Nome de Usuário
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-user"></i>
+                                        </span>
+                                        {{ user_form.username }}
+                                    </div>
+                                    <small class="form-text text-muted">
+                                        Obrigatório. 150 caracteres ou menos. Letras, números e @/./+/-/_ apenas.
+                                    </small>
+                                    {% if user_form.username.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ user_form.username.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ user_form.password1.id_for_label }}" class="form-label required-field">
+                                        Senha
+                                    </label>
+                                    <div class="input-group">
+                                        {{ user_form.password1 }}
+                                        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="id_password1">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <!-- BARRA DE FORÇA DA SENHA -->
+                                    <div class="password-strength strength-0" id="password-strength"></div>
+                                    <!-- LISTA DE REQUISITOS -->
+                                    <small class="form-text text-muted password-requirements">
+                                        <ul class="small">
+                                            <li id="length" class="text-danger"><i class="fas fa-times-circle"></i> Sua senha precisa conter pelo menos 8 caracteres.</li>
+                                            <li id="common" class="text-danger"><i class="fas fa-times-circle"></i> Sua senha não pode ser uma senha comumente utilizada.</li>
+                                            <li id="numeric" class="text-danger"><i class="fas fa-times-circle"></i> Sua senha não pode ser inteiramente numérica.</li>
+                                            <li id="similar" class="text-danger"><i class="fas fa-times-circle"></i> Sua senha não pode ser muito parecida com o resto das suas informações pessoais.</li>
+                                        </ul>
+                                    </small>
+                                    {% if user_form.password1.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ user_form.password1.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ user_form.password2.id_for_label }}" class="form-label required-field">
+                                        Confirmar Senha
+                                    </label>
+                                    <div class="input-group">
+                                        {{ user_form.password2 }}
+                                        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="id_password2">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <div id="password-match" class="password-match"></div>
+                                    <small class="form-text text-muted">
+                                        Digite a mesma senha para confirmação.
+                                    </small>
+                                    {% if user_form.password2.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ user_form.password2.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seção: Dados Pessoais -->
+                    <div class="form-section">
+                        <h4 class="form-section-title">
+                            <i class="fas fa-id-card me-2"></i>Dados Pessoais
+                        </h4>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ profissional_form.nome.id_for_label }}" class="form-label required-field">
+                                        Nome Completo
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-user"></i>
+                                        </span>
+                                        {{ profissional_form.nome }}
+                                    </div>
+                                    {% if profissional_form.nome.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ profissional_form.nome.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ profissional_form.sobrenome.id_for_label }}" class="form-label required-field">
+                                        Nome Social
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-user-tag"></i>
+                                        </span>
+                                        {{ profissional_form.sobrenome }}
+                                    </div>
+                                    {% if profissional_form.sobrenome.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ profissional_form.sobrenome.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ profissional_form.email.id_for_label }}" class="form-label required-field">
+                                        E-mail
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-envelope"></i>
+                                        </span>
+                                        {{ profissional_form.email }}
+                                    </div>
+                                    {% if profissional_form.email.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ profissional_form.email.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="id_telefone" class="form-label required-field">
+                                        Telefone
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-phone"></i>
+                                        </span>
+                                        {{ profissional_form.telefone }}
+                                    </div>
+                                    {% if profissional_form.telefone.errors %}
+                                    <div class="invalid-feedback d-block" id="telefone_error">
+                                        {{ profissional_form.telefone.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="{{ profissional_form.cpf.id_for_label }}" class="form-label required-field">
+                                        CPF
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-id-card"></i>
+                                        </span>
+                                        {{ profissional_form.cpf }}
+                                    </div>
+                                    {% if profissional_form.cpf.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ profissional_form.cpf.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ profissional_form.profissao.id_for_label }}" class="form-label required-field">
+                                        Ocupação
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-briefcase"></i>
+                                        </span>
+                                        {{ profissional_form.profissao }}
+                                    </div>
+                                    {% if profissional_form.profissao.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ profissional_form.profissao.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seção: Vínculo Profissional -->
+                    <div class="form-section">
+                        <h4 class="form-section-title">
+                            <i class="fas fa-building me-2"></i>Vínculo Profissional
+                        </h4>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ profissional_form.estabelecimento.id_for_label }}" class="form-label required-field">
+                                        Estabelecimento
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-hospital"></i>
+                                        </span>
+                                        {{ profissional_form.estabelecimento }}
+                                    </div>
+                                    <small class="form-text text-muted">Local de trabalho onde registrará ponto</small>
+                                    {% if profissional_form.estabelecimento.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ profissional_form.estabelecimento.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ profissional_form.carga_horaria_diaria.id_for_label }}" class="form-label required-field">
+                                        Carga Horária Diária
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-clock"></i>
+                                        </span>
+                                        {{ profissional_form.carga_horaria_diaria }}
+                                    </div>
+                                    <small class="form-text text-muted">Horas trabalhadas por dia</small>
+                                    {% if profissional_form.carga_horaria_diaria.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ profissional_form.carga_horaria_diaria.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ profissional_form.carga_horaria_semanal.id_for_label }}" class="form-label required-field">
+                                        Carga Horária Semanal
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-calendar-week"></i>
+                                        </span>
+                                        {{ profissional_form.carga_horaria_semanal }}
+                                    </div>
+                                    <small class="form-text text-muted">Horas trabalhadas por semana</small>
+                                    {% if profissional_form.carga_horaria_semanal.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ profissional_form.carga_horaria_semanal.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NOVA SEÇÃO: Horários de Trabalho -->
+                    <div class="form-section">
+                        <h4 class="form-section-title">
+                            <i class="fas fa-clock me-2"></i>Horários de Trabalho
+                        </h4>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ profissional_form.horario_entrada.id_for_label }}" class="form-label required-field">
+                                        Horário de Entrada
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-sign-in-alt"></i>
+                                        </span>
+                                        {{ profissional_form.horario_entrada }}
+                                    </div>
+                                    <small class="form-text text-muted">
+                                        {{ profissional_form.horario_entrada.help_text }}
+                                    </small>
+                                    {% if profissional_form.horario_entrada.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ profissional_form.horario_entrada.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ profissional_form.horario_saida.id_for_label }}" class="form-label required-field">
+                                        Horário de Saída
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-sign-out-alt"></i>
+                                        </span>
+                                        {{ profissional_form.horario_saida }}
+                                    </div>
+                                    <small class="form-text text-muted">
+                                        {{ profissional_form.horario_saida.help_text }}
+                                    </small>
+                                    {% if profissional_form.horario_saida.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ profissional_form.horario_saida.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="{{ profissional_form.tolerancia_minutos.id_for_label }}" class="form-label required-field">
+                                        Tolerância
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-user-clock"></i>
+                                        </span>
+                                        {{ profissional_form.tolerancia_minutos }}
+                                    </div>
+                                    <small class="form-text text-muted">
+                                        {{ profissional_form.tolerancia_minutos.help_text }}
+                                    </small>
+                                    {% if profissional_form.tolerancia_minutos.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ profissional_form.tolerancia_minutos.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Informação sobre cálculo automático -->
+                        <div id="horario-calculado-info" class="horario-calculado" style="display: none;">
+                            <i class="fas fa-calculator me-2"></i>
+                            <strong>Jornada calculada:</strong> <span id="jornada-calculada"></span> horas
+                        </div>
+                        
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Importante:</strong> Estes horários serão utilizados para cálculo automático de atrasos e saídas antecipadas no sistema de ponto.
+                        </div>
+                    </div>
+
+                    <!-- Seção: Termos e Condições -->
+                    <div class="terms-section">
+                        <div class="form-check">
+                            <input type="checkbox" 
+                                   class="form-check-input" 
+                                   id="{{ profissional_form.termo_uso.id_for_label }}" 
+                                   name="{{ profissional_form.termo_uso.html_name }}" 
+                                   {% if profissional_form.termo_uso.value %}checked{% endif %}
+                                   required>
+                            <label class="form-check-label required-field" for="{{ profissional_form.termo_uso.id_for_label }}">
+                                Eu li e aceito os <span class="terms-link" data-bs-toggle="modal" data-bs-target="#termosModal">Termos de Uso e Política de Privacidade</span>
+                            </label>
+                            {% if profissional_form.termo_uso.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ profissional_form.termo_uso.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Botões de Ação -->
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mt-4">
+                        <div>
+                            <a href="{% url 'usuarios:login' %}" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja cancelar? Todas as informações serão perdidas.');">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </a>
+                        </div>
+                        <div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check me-2"></i>Confirmar Cadastro
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                
+                <footer class="footer">
+                    <div class="container-fluid">
+                        <span class="text-muted">
+                            &copy; <script>document.write(new Date().getFullYear())</script> TimeFlow - Sistema de Ponto Eletrônico. Todos os Direitos Reservados.
+                        </span>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Termos de Uso -->
+    <div class="modal fade" id="termosModal" tabindex="-1" aria-labelledby="termosModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="termosModalLabel">
+                        <i class="fas fa-file-contract me-2"></i>Termos de Uso - TimeFlow
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6 class="text-primary mb-3">Política de Privacidade e Termos de Uso do Sistema</h6>
+                    
+                    <p>Ao criar uma conta no <strong>TimeFlow</strong>, você concorda com os termos estabelecidos abaixo:</p>
+                    
+                    <h6 class="mt-4">1. Proteção de Dados Pessoais (LGPD)</h6>
+                    <p>O TimeFlow segue rigorosamente a Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018). Seus dados pessoais são coletados e processados exclusivamente para:</p>
+                    <ul>
+                        <li>Identificação e autenticação no sistema</li>
+                        <li>Registro e controle de ponto eletrônico</li>
+                        <li>Geração de relatórios trabalhistas</li>
+                        <li>Comunicação sobre o sistema</li>
+                    </ul>
+                    
+                    <h6 class="mt-4">2. Coleta e Uso de Dados</h6>
+                    <p><strong>Dados coletados:</strong> nome completo, CPF, e-mail, telefone, dados profissionais e registros de ponto.</p>
+                    <p><strong>Finalidade:</strong> Os dados são utilizados exclusivamente para gestão de ponto eletrônico e cumprimento de obrigações trabalhistas.</p>
+                    
+                    <h6 class="mt-4">3. Segurança da Informação</h6>
+                    <p>Implementamos medidas de segurança para proteger seus dados contra:</p>
+                    <ul>
+                        <li>Acessos não autorizados</li>
+                        <li>Alterações indevidas</li>
+                        <li>Divulgação não autorizada</li>
+                    </ul>
+                    
+                    <h6 class="mt-4">4. Responsabilidades do Usuário</h6>
+                    <p>Como usuário, você concorda em:</p>
+                    <ul>
+                        <li>Manter suas credenciais de acesso em sigilo</li>
+                        <li>Notificar imediatamente em caso de perda ou suspeita de acesso não autorizado</li>
+                        <li>Utilizar o sistema apenas para fins legítimos de registro de ponto</li>
+                        <li>Fornecer informações verdadeiras e atualizadas</li>
+                    </ul>
+                    
+                    <h6 class="mt-4">5. Registro de Ponto</h6>
+                    <p>O sistema utiliza geolocalização para validar registros de ponto. Ao utilizar o sistema, você autoriza:</p>
+                    <ul>
+                        <li>Coleta de coordenadas GPS para verificação de localização</li>
+                        <li>Armazenamento de horários e locais de registro</li>
+                        <li>Compartilhamento dessas informações com seu empregador para fins trabalhistas</li>
+                    </ul>
+                    
+                    <h6 class="mt-4">6. Direitos do Titular</h6>
+                    <p>Conforme a LGPD, você tem direito a:</p>
+                    <ul>
+                        <li>Acessar seus dados pessoais</li>
+                        <li>Corrigir dados incompletos ou desatualizados</li>
+                        <li>Solicitar a eliminação de dados tratados com seu consentimento</li>
+                        <li>Revogar o consentimento a qualquer momento</li>
+                    </ul>
+                    
+                    <div class="alert alert-info mt-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Importante:</strong> O não cumprimento destes termos pode resultar na suspensão ou cancelamento do acesso ao sistema.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // ✅ CORREÇÃO: Função para mostrar/esconder senha
+            function setupPasswordToggle() {
+                const toggleButtons = document.querySelectorAll('.toggle-password');
+                
+                toggleButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const targetId = this.getAttribute('data-target');
+                        const passwordInput = document.getElementById(targetId);
+                        const icon = this.querySelector('i');
+                        
+                        if (passwordInput.type === 'password') {
+                            passwordInput.type = 'text';
+                            icon.classList.remove('fa-eye');
+                            icon.classList.add('fa-eye-slash');
+                        } else {
+                            passwordInput.type = 'password';
+                            icon.classList.remove('fa-eye-slash');
+                            icon.classList.add('fa-eye');
+                        }
+                    });
+                });
+            }
+
+            // ✅ CORREÇÃO: Validação em tempo real das senhas
+            function setupPasswordValidation() {
+                const password1 = document.getElementById('id_password1');
+                const password2 = document.getElementById('id_password2');
+                const matchIndicator = document.getElementById('password-match');
+                
+                function checkPasswordMatch() {
+                    if (password1.value && password2.value) {
+                        if (password1.value === password2.value) {
+                            matchIndicator.innerHTML = '<i class="fas fa-check-circle"></i> As senhas conferem';
+                            matchIndicator.className = 'password-match match-valid';
+                            password2.classList.add('is-valid');
+                            password2.classList.remove('is-invalid');
+                        } else {
+                            matchIndicator.innerHTML = '<i class="fas fa-times-circle"></i> As senhas não conferem';
+                            matchIndicator.className = 'password-match match-invalid';
+                            password2.classList.add('is-invalid');
+                            password2.classList.remove('is-valid');
+                        }
+                    } else {
+                        matchIndicator.innerHTML = '';
+                        password2.classList.remove('is-valid', 'is-invalid');
+                    }
+                }
+                
+                password1.addEventListener('input', checkPasswordMatch);
+                password2.addEventListener('input', checkPasswordMatch);
+            }
+
+            // ✅ CORREÇÃO: Validação de senha em tempo real
+            function setupPasswordStrength() {
+                const passwordInput = document.getElementById('id_password1');
+                
+                passwordInput.addEventListener('input', function(e) {
+                    const password = e.target.value;
+                    const strengthBar = document.getElementById('password-strength');
+                    const lengthCheck = document.getElementById('length');
+                    const commonCheck = document.getElementById('common');
+                    const numericCheck = document.getElementById('numeric');
+                    const similarCheck = document.getElementById('similar');
+                    
+                    // Verifica o comprimento
+                    const hasLength = password.length >= 8;
+                    lengthCheck.className = hasLength ? 'text-success' : 'text-danger';
+                    lengthCheck.innerHTML = hasLength ? 
+                        '<i class="fas fa-check-circle"></i> Sua senha precisa conter pelo menos 8 caracteres.' : 
+                        '<i class="fas fa-times-circle"></i> Sua senha precisa conter pelo menos 8 caracteres.';
+                    
+                    // Verifica se é comum (simulação)
+                    const isCommon = ['password', '12345678', 'qwerty', 'senha123'].includes(password.toLowerCase());
+                    commonCheck.className = !isCommon ? 'text-success' : 'text-danger';
+                    commonCheck.innerHTML = !isCommon ? 
+                        '<i class="fas fa-check-circle"></i> Sua senha não pode ser uma senha comumente utilizada.' : 
+                        '<i class="fas fa-times-circle"></i> Sua senha não pode ser uma senha comumente utilizada.';
+                    
+                    // Verifica se é totalmente numérica
+                    const isNumeric = /^\d+$/.test(password);
+                    numericCheck.className = !isNumeric ? 'text-success' : 'text-danger';
+                    numericCheck.innerHTML = !isNumeric ? 
+                        '<i class="fas fa-check-circle"></i> Sua senha não pode ser inteiramente numérica.' : 
+                        '<i class="fas fa-times-circle"></i> Sua senha não pode ser inteiramente numérica.';
+                    
+                    // Verifica se é similar a outras informações (simulação)
+                    const username = document.getElementById('id_username').value;
+                    const isSimilar = username && password.toLowerCase().includes(username.toLowerCase());
+                    similarCheck.className = !isSimilar ? 'text-success' : 'text-danger';
+                    similarCheck.innerHTML = !isSimilar ? 
+                        '<i class="fas fa-check-circle"></i> Sua senha não pode ser muito parecida com o resto das suas informações pessoais.' : 
+                        '<i class="fas fa-times-circle"></i> Sua senha não pode ser muito parecida com o resto das suas informações pessoais.';
+                    
+                    // Calcula força da senha
+                    let strength = 0;
+                    if (password.length >= 8) strength++;
+                    if (/[A-Z]/.test(password)) strength++;
+                    if (/[0-9]/.test(password)) strength++;
+                    if (/[^A-Za-z0-9]/.test(password)) strength++;
+                    
+                    // Atualiza barra de força
+                    strengthBar.className = 'password-strength strength-' + strength;
+                });
+            }
+
+            // Máscara para telefone
+            function mascaraFone(event) {
+                var input = event.target;
+                var valor = input.value.replace(/\D/g, "");
+                var retorno = "";
+                if (valor.length > 0) {
+                    retorno = "(" + valor.substring(0, 2);
+                }
+                if (valor.length >= 3) {
+                    retorno += ") " + valor.substring(2, 7);
+                }
+                if (valor.length >= 7) {
+                    retorno += "-" + valor.substring(7, 11);
+                }
+                input.value = retorno;
+            }
+
+            // Cálculo automático da carga horária semanal
+            function setupCargaHoraria() {
+                const cargaDiaria = document.getElementById('id_carga_horaria_diaria');
+                const cargaSemanal = document.getElementById('id_carga_horaria_semanal');
+                
+                if (cargaDiaria && cargaSemanal) {
+                    cargaDiaria.addEventListener('change', function(e) {
+                        const cargaDiariaValue = e.target.value;
+                        
+                        if (cargaDiariaValue) {
+                            // Converte horas para segundos e calcula semana (5 dias)
+                            const [hours, minutes, seconds] = cargaDiariaValue.split(':').map(Number);
+                            const totalSecondsDiaria = (hours * 3600) + (minutes * 60) + (seconds || 0);
+                            const totalSecondsSemana = totalSecondsDiaria * 5;
+                            
+                            // Converte de volta para HH:MM:SS
+                            const horasSemana = Math.floor(totalSecondsSemana / 3600);
+                            const minutosSemana = Math.floor((totalSecondsSemana % 3600) / 60);
+                            const segundosSemana = totalSecondsSemana % 60;
+                            
+                            // Formata o valor para seleção
+                            const valorFormatado = 
+                                horasSemana.toString().padStart(2, '0') + ':' +
+                                minutosSemana.toString().padStart(2, '0') + ':' +
+                                segundosSemana.toString().padStart(2, '0');
+                            
+                            // Encontra e seleciona a opção correspondente
+                            for (let option of cargaSemanal.options) {
+                                if (option.value === valorFormatado) {
+                                    cargaSemanal.value = valorFormatado;
+                                    break;
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            // Validação de CPF
+            function setupCPFValidation() {
+                const cpfField = document.getElementById('id_cpf');
+                
+                if (cpfField) {
+                    cpfField.addEventListener('input', function(e) {
+                        // Permite apenas números e limita a 11
+                        let rawValue = e.target.value.replace(/\D/g, "").substring(0, 11);
+                        e.target.value = rawValue;
+                        
+                        // Validação
+                        if (rawValue.length === 11) {
+                            cpfField.classList.add('is-valid');
+                            cpfField.classList.remove('is-invalid');
+                        } else if (rawValue.length > 0) {
+                            cpfField.classList.add('is-invalid');
+                            cpfField.classList.remove('is-valid');
+                        } else {
+                            cpfField.classList.remove('is-valid', 'is-invalid');
+                        }
+                    });
+                }
+            }
+
+            // Cálculo automático da jornada de trabalho
+            function setupJornadaCalculo() {
+                const entrada = document.getElementById('id_horario_entrada');
+                const saida = document.getElementById('id_horario_saida');
+                
+                function calcularJornada() {
+                    const infoDiv = document.getElementById('horario-calculado-info');
+                    const jornadaSpan = document.getElementById('jornada-calculada');
+                    
+                    if (entrada.value && saida.value) {
+                        const [entradaH, entradaM] = entrada.value.split(':').map(Number);
+                        const [saidaH, saidaM] = saida.value.split(':').map(Number);
+                        
+                        let entradaMinutos = entradaH * 60 + entradaM;
+                        let saidaMinutos = saidaH * 60 + saidaM;
+                        
+                        // Se saída for antes da entrada, assume que é no dia seguinte
+                        if (saidaMinutos < entradaMinutos) {
+                            saidaMinutos += 24 * 60;
+                        }
+                        
+                        const diferencaMinutos = saidaMinutos - entradaMinutos;
+                        const horas = Math.floor(diferencaMinutos / 60);
+                        const minutos = diferencaMinutos % 60;
+                        
+                        const jornadaFormatada = `${horas}h ${minutos.toString().padStart(2, '0')}min`;
+                        jornadaSpan.textContent = jornadaFormatada;
+                        infoDiv.style.display = 'block';
+                        
+                        // Validação: horário de saída deve ser após entrada
+                        if (saidaMinutos <= entradaMinutos) {
+                            saida.classList.add('is-invalid');
+                            saida.classList.remove('is-valid');
+                        } else {
+                            saida.classList.add('is-valid');
+                            saida.classList.remove('is-invalid');
+                        }
+                    } else {
+                        infoDiv.style.display = 'none';
+                    }
+                }
+                
+                if (entrada && saida) {
+                    entrada.addEventListener('change', calcularJornada);
+                    entrada.addEventListener('input', calcularJornada);
+                    saida.addEventListener('change', calcularJornada);
+                    saida.addEventListener('input', calcularJornada);
+                }
+            }
+
+            // Inicializar todas as funcionalidades
+            setupPasswordToggle();
+            setupPasswordValidation();
+            setupPasswordStrength();
+            setupCargaHoraria();
+            setupCPFValidation();
+            setupJornadaCalculo();
+
+            // Event listener para telefone
+            const telefoneField = document.getElementById('id_telefone');
+            if (telefoneField) {
+                telefoneField.addEventListener('input', mascaraFone);
+            }
+
+            // Validação do formulário antes do envio
+            document.getElementById('cadastroForm').addEventListener('submit', function(e) {
+                const password1 = document.getElementById('id_password1');
+                const password2 = document.getElementById('id_password2');
+                
+                if (password1.value !== password2.value) {
+                    e.preventDefault();
+                    alert('As senhas não conferem. Por favor, corrija antes de enviar o formulário.');
+                    password2.focus();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

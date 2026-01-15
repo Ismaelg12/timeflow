@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório - {{ profissional.nome }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --info-color: #4895ef;
+            --warning-color: #f72585;
+            --danger-color: #e63946;
+            --light-bg: #f8f9fa;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --hover-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+        
+        body {
+            background-color: #f5f7fb;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #2d3748;
+        }
+        
+        .container-fluid {
+            max-width: 90%;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            box-shadow: var(--hover-shadow);
+            transform: translateY(-2px);
+        }
+        
+        .card-header {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 1.25rem 1.5rem;
+            background: white;
+        }
+        
+        .card-stat {
+            border-radius: 12px;
+            transition: transform 0.3s ease;
+            border: none;
+            overflow: hidden;
+        }
+        
+        .card-stat:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            opacity: 0.8;
+        }
+        
+        .badge-horas {
+            font-size: 0.75em;
+            padding: 0.35em 0.65em;
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+        
+        .progress {
+            height: 8px;
+            border-radius: 10px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 0.5rem 1.25rem;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        
+        .form-control, .form-select {
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
+        }
+        
+        .table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        
+        .table th {
+            border-top: none;
+            font-weight: 600;
+            color: #4a5568;
+            background-color: #f7fafc;
+            padding: 1rem 0.75rem;
+        }
+        
+        .table td {
+            padding: 1rem 0.75rem;
+            border-top: 1px solid #edf2f7;
+        }
+        
+        .list-group-item {
+            border: none;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #edf2f7;
+        }
+        
+        .list-group-item:last-child {
+            border-bottom: none;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+        }
+        
+        .page-title {
+            font-weight: 700;
+            color: #1a202c;
+        }
+        
+        .text-muted {
+            color: #718096 !important;
+        }
+        
+        /* Custom colors for cards */
+        .bg-primary-custom {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+        }
+        
+        .bg-info-custom {
+            background: linear-gradient(135deg, var(--info-color), #3a86ff) !important;
+        }
+        
+        .bg-success-custom {
+            background: linear-gradient(135deg, var(--success-color), #4361ee) !important;
+        }
+        
+        .bg-warning-custom {
+            background: linear-gradient(135deg, var(--warning-color), #b5179e) !important;
+        }
+        
+        .bg-danger-custom {
+            background: linear-gradient(135deg, var(--danger-color), #d00000) !important;
+        }
+        
+        /* Badge styles */
+        .badge {
+            border-radius: 6px;
+            font-weight: 500;
+            padding: 0.35em 0.65em;
+        }
+        
+        /* Status indicators */
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+        
+        .status-on-time { background-color: #28a745; }
+        .status-delayed { background-color: #ffc107; }
+        .status-early { background-color: #fd7e14; }
+        
+        /* Filter card styling */
+        .filter-card {
+            background: white;
+        }
+        
+        /* Pagination styles */
+        .pagination {
+            margin-bottom: 0;
+        }
+        
+        .page-link {
+            border-radius: 8px;
+            margin: 0 2px;
+            border: 1px solid #e2e8f0;
+            color: var(--primary-color);
+        }
+        
+        .page-link:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+        
+        .page-item.active .page-link {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .card-stat {
+                margin-bottom: 1rem;
+            }
+            
+            .stat-icon {
+                font-size: 2rem;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+            
+            .btn-group {
+                width: 100%;
+            }
+            
+            .pagination {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .page-link {
+                padding: 0.375rem 0.75rem;
+                font-size: 0.875rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <!-- Cabeçalho -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
+            <div class="col-md-6">
+                <h1 class="page-title mb-1">
+                    <i class="fas fa-chart-line me-2" style="color: var(--primary-color);"></i>
+                    {% if request.user.is_superuser %}
+                        Relatório de Pontos - {{ profissional.nome }}
+                    {% else %}
+                        Meu Relatório de Pontos
+                    {% endif %}
+                </h1>
+            </div>
+            <div class="d-flex flex-column justify-content-end flex-sm-row gap-2 w-100 w-md-auto">
+                <a href="{% url 'core:relatorio_profissional_pdf' profissional.id %}?{% if data_inicio %}data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}" 
+                   class="btn btn-danger d-flex align-items-center justify-content-center"
+                   target="_blank">
+                    <i class="fas fa-file-pdf me-2"></i> Gerar PDF
+                </a>
+                
+                {% if request.user.is_superuser %}
+                <a href="{% url 'core:dashboard' %}" class="btn btn-outline-secondary d-flex align-items-center justify-content-center">
+                    <i class="fas fa-arrow-left me-2"></i> Voltar
+                </a>
+                {% else %}
+                <a href="{% url 'logout' %}" class="btn btn-outline-danger d-flex align-items-center justify-content-center">
+                    <i class="fas fa-sign-out-alt me-2"></i> Sair
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="card filter-card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0 d-flex align-items-center">
+                    <i class="fas fa-filter me-2 text-primary"></i> Filtros do Relatório
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-5">
+                        <label for="data_inicio" class="form-label fw-semibold">Data Início</label>
+                        <input type="date" class="form-control" id="data_inicio" name="data_inicio" 
+                               value="{{ data_inicio }}">
+                    </div>
+                    <div class="col-md-5">
+                        <label for="data_fim" class="form-label fw-semibold">Data Fim</label>
+                        <input type="date" class="form-control" id="data_fim" name="data_fim" 
+                               value="{{ data_fim }}">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100 d-flex align-items-center justify-content-center">
+                            <i class="fas fa-search me-2"></i> Filtrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Informações do Profissional -->
+        <div class="card mb-4">
+            <div class="card-header d-flex align-items-center" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+                <h5 class="mb-0 text-white">
+                    <i class="fas fa-user me-2"></i> 
+                    {% if request.user.is_superuser %}
+                        Informações do Profissional
+                    {% else %}
+                        Minhas Informações
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="d-flex align-items-center mb-3">
+                            <i class="fas fa-id-card me-2 text-primary"></i>
+                            <strong class="me-2">Nome:</strong> {{ profissional.nome }} {{ profissional.sobrenome }}
+                        </p>
+                        <p class="d-flex align-items-center mb-3">
+                            <i class="fas fa-fingerprint me-2 text-primary"></i>
+                            <strong class="me-2">CPF:</strong> {{ profissional.cpf }}
+                        </p>
+                        <p class="d-flex align-items-center mb-3">
+                            <i class="fas fa-briefcase me-2 text-primary"></i>
+                            <strong class="me-2">Profissão:</strong> {{ profissional.profissao|default:"Não informado" }}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="d-flex align-items-center mb-3">
+                            <i class="fas fa-clock me-2 text-primary"></i>
+                            <strong class="me-2">Carga Horária Diária:</strong> 
+                            <span class="badge bg-primary ms-2">{{ carga_horaria_diaria }}</span>
+                        </p>
+                        <p class="d-flex align-items-center mb-3">
+                            <i class="fas fa-calendar-week me-2 text-primary"></i>
+                            <strong class="me-2">Carga Horária Semanal:</strong> 
+                            <span class="badge bg-primary ms-2">{{ carga_horaria_semanal }}</span>
+                        </p>
+                        {% if profissional.horario_entrada and profissional.horario_saida %}
+                        <p class="d-flex align-items-center mb-3">
+                            <i class="fas fa-business-time me-2 text-primary"></i>
+                            <strong class="me-2">Horário de Trabalho:</strong> 
+                            <span class="badge bg-info ms-2">
+                                {{ profissional.horario_entrada|time:"H:i" }} às {{ profissional.horario_saida|time:"H:i" }}
+                            </span>
+                        </p>
+                        {% endif %}
+                        {% if profissional.tolerancia_minutos %}
+                        <p class="d-flex align-items-center mb-0">
+                            <i class="fas fa-user-clock me-2 text-primary"></i>
+                            <strong class="me-2">Tolerância:</strong> 
+                            <span class="badge bg-warning text-dark ms-2">{{ profissional.tolerancia_minutos }} minutos</span>
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ✅ NOVA SEÇÃO: ESTATÍSTICAS DE TOLERÂNCIA -->
+        {% if total_atrasos > 0 or total_saidas_antecipadas > 0 %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-warning">
+                    <div class="card-header bg-warning bg-opacity-10 border-warning">
+                        <h5 class="mb-0 d-flex align-items-center text-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i> Controle de Tolerância
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <div class="d-flex align-items-center">
+                                    <div class="status-dot status-delayed"></div>
+                                    <strong class="me-2">Total de Atrasos:</strong>
+                                    <span class="badge bg-warning text-dark">{{ total_atrasos }} minutos</span>
+                                    <small class="text-muted ms-2">({{ registros_com_atraso }} registros)</small>
+                                </div>
+                                {% if media_atrasos > 0 %}
+                                <small class="text-muted">Média: {{ media_atrasos|floatformat:1 }} min por dia com atraso</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <div class="status-dot status-early"></div>
+                                    <strong class="me-2">Saídas Antecipadas:</strong>
+                                    <span class="badge bg-warning text-dark">{{ total_saidas_antecipadas }} minutos</span>
+                                    <small class="text-muted ms-2">({{ registros_com_saida_antecipada }} registros)</small>
+                                </div>
+                                {% if media_saidas_antecipadas > 0 %}
+                                <small class="text-muted">Média: {{ media_saidas_antecipadas|floatformat:1 }} min por saída antecipada</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Estatísticas Principais -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card text-white bg-primary-custom card-stat h-100">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h6 class="card-title opacity-75 mb-1">Total de Horas</h6>
+                                <h2 class="card-text fw-bold">{{ horas_trabalhadas }}</h2>
+                                <small class="opacity-75">{{ horas_trabalhadas_decimal|floatformat:1 }} horas</small>
+                            </div>
+                            <i class="fas fa-clock stat-icon"></i>
+                        </div>
+                        {% if diferenca_horas_decimal != 0 %}
+                        <div class="mt-auto">
+                            <span class="badge {% if diferenca_horas_decimal > 0 %}bg-success{% else %}bg-light text-dark{% endif %} badge-horas">
+                                {% if diferenca_horas_decimal > 0 %}+{% endif %}{{ diferenca_horas_decimal|floatformat:1 }}h
+                            </span>
+                            <small class="opacity-75">vs esperado</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card text-white bg-info-custom card-stat h-100">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="card-title opacity-75 mb-1">Média Diária</h6>
+                                <h2 class="card-text fw-bold">
+                                    {% if dias_trabalhados > 0 %}
+                                        {{ media_diaria|default:horas_trabalhadas_decimal|floatformat:2 }}h
+                                    {% else %}
+                                        0h
+                                    {% endif %}
+                                </h2>
+                                <small class="opacity-75">por dia trabalhado</small>
+                            </div>
+                            <i class="fas fa-chart-bar stat-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card text-white bg-success-custom card-stat h-100">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="card-title opacity-75 mb-1">Registros</h6>
+                                <h2 class="card-text fw-bold">{{ total_registros }}</h2>
+                                <small class="opacity-75">{{ entradas }} entradas / {{ saidas }} saídas</small>
+                            </div>
+                            <i class="fas fa-list stat-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card text-white bg-warning-custom card-stat h-100">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="card-title opacity-75 mb-1">Dias Trabalhados</h6>
+                                <h2 class="card-text fw-bold">{{ dias_trabalhados }}</h2>
+                                <small class="opacity-75">de {{ dias_uteis }} dias úteis</small>
+                            </div>
+                            <i class="fas fa-calendar-check stat-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico de Horas por Dia da Semana -->
+        <div class="row mb-4">
+            <div class="col-lg-8 mb-4 mb-lg-0">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0 d-flex align-items-center">
+                            <i class="fas fa-chart-bar me-2 text-primary"></i> Horas Trabalhadas por Dia da Semana
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="horasDiaSemanaChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0 d-flex align-items-center">
+                            <i class="fas fa-table me-2 text-primary"></i> Resumo por Dia
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            {% for dia in horas_por_dia %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <span class="fw-medium">{{ dia.dia }}</span>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-primary rounded-pill me-2">
+                                        {{ dia.horas }}
+                                    </span>
+                                    <small class="text-muted">
+                                        {{ dia.registros }} reg.
+                                    </small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Registros com Paginação -->
+        <div class="card">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 d-flex align-items-center">
+                    <i class="fas fa-list-ol me-2 text-primary"></i> Registros de Ponto
+                    <span class="badge bg-secondary ms-2">{{ page_obj.paginator.count }}</span>
+                </h5>
+                <div class="text-muted small">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="border-0">Data</th>
+                                <th class="border-0">Horário</th>
+                                <th class="border-0">Tipo</th>
+                                <th class="border-0">Status</th>
+                                <th class="border-0">Estabelecimento</th>
+                                {% if request.user.is_superuser %}
+                                <th class="border-0">Observações</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for registro in page_obj %}
+                            <tr>
+                                <td class="fw-medium">{{ registro.data|date:"d/m/Y" }}</td>
+                                <td>{{ registro.horario|time:"H:i" }}</td>
+                                <td>
+                                    <span class="badge {% if registro.tipo == 'ENTRADA' %}bg-success{% else %}bg-danger{% endif %}">
+                                        {{ registro.get_tipo_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if registro.atraso_minutos > 0 %}
+                                        <span class="badge bg-warning text-dark" title="Atraso de {{ registro.atraso_minutos }} minutos">
+                                            <i class="fas fa-clock me-1"></i>Atraso: {{ registro.atraso_minutos }}min
+                                        </span>
+                                    {% elif registro.saida_antecipada_minutos > 0 %}
+                                        <span class="badge bg-warning text-dark" title="Saída antecipada em {{ registro.saida_antecipada_minutos }} minutos">
+                                            <i class="fas fa-sign-out-alt me-1"></i>Antec: {{ registro.saida_antecipada_minutos }}min
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i>No horário
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ registro.estabelecimento.nome }}</td>
+                                {% if request.user.is_superuser %}
+                                <td>
+                                    <small class="text-muted">{{ registro.observacoes|default:"-" }}</small>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="{% if request.user.is_superuser %}6{% else %}5{% endif %}" class="text-center py-5 text-muted">
+                                    <i class="fas fa-inbox fa-3x mb-3 opacity-50"></i><br>
+                                    Nenhum registro encontrado para o período selecionado.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Paginação -->
+                {% if page_obj.paginator.num_pages > 1 %}
+                <div class="card-footer bg-light">
+                    <nav aria-label="Navegação de páginas">
+                        <ul class="pagination justify-content-center mb-0">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% if data_inicio %}data_inicio={{ data_inicio }}&{% endif %}{% if data_fim %}data_fim={{ data_fim }}&{% endif %}page=1" aria-label="Primeira">
+                                        <i class="fas fa-angle-double-left"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% if data_inicio %}data_inicio={{ data_inicio }}&{% endif %}{% if data_fim %}data_fim={{ data_fim }}&{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Anterior">
+                                        <i class="fas fa-angle-left"></i>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link"><i class="fas fa-angle-double-left"></i></span>
+                                </li>
+                                <li class="page-item disabled">
+                                    <span class="page-link"><i class="fas fa-angle-left"></i></span>
+                                </li>
+                            {% endif %}
+
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?{% if data_inicio %}data_inicio={{ data_inicio }}&{% endif %}{% if data_fim %}data_fim={{ data_fim }}&{% endif %}page={{ num }}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% if data_inicio %}data_inicio={{ data_inicio }}&{% endif %}{% if data_fim %}data_fim={{ data_fim }}&{% endif %}page={{ page_obj.next_page_number }}" aria-label="Próxima">
+                                        <i class="fas fa-angle-right"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% if data_inicio %}data_inicio={{ data_inicio }}&{% endif %}{% if data_fim %}data_fim={{ data_fim }}&{% endif %}page={{ page_obj.paginator.num_pages }}" aria-label="Última">
+                                        <i class="fas fa-angle-double-right"></i>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link"><i class="fas fa-angle-right"></i></span>
+                                </li>
+                                <li class="page-item disabled">
+                                    <span class="page-link"><i class="fas fa-angle-double-right"></i></span>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    
+                    <!-- Informações da paginação -->
+                    <div class="text-center mt-2 text-muted small">
+                        Mostrando {{ page_obj.start_index }} - {{ page_obj.end_index }} de {{ page_obj.paginator.count }} registros
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gráfico de horas por dia da semana
+        const ctx = document.getElementById('horasDiaSemanaChart').getContext('2d');
+        const horasPorDiaData = {
+            labels: [{% for dia in horas_por_dia %}"{{ dia.dia }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Horas Trabalhadas',
+                data: [{% for dia in horas_por_dia %}{{ dia.horas_decimal|floatformat:2 }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                backgroundColor: [
+                    'rgba(67, 97, 238, 0.7)', 
+                    'rgba(76, 201, 240, 0.7)', 
+                    'rgba(72, 149, 239, 0.7)', 
+                    'rgba(247, 37, 133, 0.7)', 
+                    'rgba(106, 76, 235, 0.7)', 
+                    'rgba(245, 101, 101, 0.7)', 
+                    'rgba(120, 119, 116, 0.7)'
+                ],
+                borderColor: [
+                    '#4361ee', 
+                    '#4cc9f0', 
+                    '#4895ef', 
+                    '#f72585', 
+                    '#6a4ceb', 
+                    '#f56565', 
+                    '#787774'
+                ],
+                borderWidth: 2,
+                borderRadius: 6,
+                borderSkipped: false,
+            }]
+        };
+
+        const horasDiaSemanaChart = new Chart(ctx, {
+            type: 'bar',
+            data: horasPorDiaData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        titleFont: {
+                            size: 14
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        padding: 10,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                return `Horas: ${context.parsed.y.toFixed(2)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Horas',
+                            color: '#4a5568',
+                            font: {
+                                weight: '600'
+                            }
+                        },
+                        ticks: {
+                            color: '#718096'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Dia da Semana',
+                            color: '#4a5568',
+                            font: {
+                                weight: '600'
+                            }
+                        },
+                        ticks: {
+                            color: '#718096'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Auto-submit form quando datas mudarem (opcional)
+        document.getElementById('data_inicio').addEventListener('change', function() {
+            if(this.value && document.getElementById('data_fim').value) {
+                this.form.submit();
+            }
+        });
+
+        document.getElementById('data_fim').addEventListener('change', function() {
+            if(this.value && document.getElementById('data_inicio').value) {
+                this.form.submit();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+{% extends "base_login.html" %}
+{% load static %}
+<!-- MENU NAVIGATION-->
+{% block menu %}
+<li class="nav-item mx-0 mx-lg-1">
+    <a class="nav-link py-3 px-0 px-lg-3 rounded js-scroll-trigger" href="{% url 'painel' %}">MEU PAINEL</a>
+</li>
+{% endblock menu %}
+<!-- INICIO DO CONTEÚDO DA PÁGINA -->
+{% block container %} 
+<div class="container content-container" style="width: 90%;">
+    {% block page_title %}
+    <h3 class="text-center">{{ titulo_pagina }}</h3>
+    {% endblock page_title %}
+        <div class="d-flex justify-content-between mb-4" style="margin:14px;">
+        <a href="{% url 'painel' %}" class="btn btn-primary"><i class="fa fa-home"></i> Dashboard</a>        
+    </div>
+    <form method="post">
+        {% csrf_token %}
+        <!-- Campo Nome -->
+                <div class="form-group row">
+            <div class="col-md-12">
+                <label for="{{ form.profissao.id_for_label }}" class="col-form-label">*Fução</label>
+                {{ form.profissao }}
+                <span class="text-danger">{{ form.profissao.errors }}</span>
+            </div>
+        </div>
+        <!-- Botão de envio -->
+          <div class="d-flex justify-content-between mb-4">
+                <a href="{% url 'municipios' %}" class="btn btn-primary"><i class="fa fa-reply"></i> Voltar lista de funções</a>
+                <button type="submit" class="btn btn-success">{{ botao_submit }}</button>
+        </div>
+        
+    </form>
+</div>
+{% endblock container %}

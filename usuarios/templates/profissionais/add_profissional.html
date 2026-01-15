@@ -1,0 +1,5 @@
+{% if profissional_form.instance.pk %}
+{% include 'profissionais/edit.html' %}
+{% else %}
+{% include 'profissionais/add.html' %}
+{% endif %}

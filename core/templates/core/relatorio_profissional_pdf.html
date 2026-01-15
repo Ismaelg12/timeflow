@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório - {{ profissional.nome }}</title>
+    <style>
+        @page {
+            size: a4 portrait;
+            margin: 2cm;
+            @bottom-right {
+                content: "Página " counter(page) " de " counter(pages);
+                font-size: 10px;
+                color: #666;
+            }
+        }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+        }
+        .header {
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            color: #007bff;
+            margin: 0;
+            font-size: 24px;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #f9f9f9;
+        }
+        .card-title {
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        .table th,
+        .table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .badge {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        .bg-primary { background-color: #007bff; color: white; }
+        .bg-success { background-color: #28a745; color: white; }
+        .bg-danger { background-color: #dc3545; color: white; }
+        .bg-warning { background-color: #ffc107; color: black; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .mb-0 { margin-bottom: 0; }
+        .mt-3 { margin-top: 15px; }
+        .d-flex { display: flex; }
+        .justify-content-between { justify-content: space-between; }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -10px;
+        }
+        .col-md-3 {
+            flex: 0 0 25%;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+        .col-md-6 {
+            flex: 0 0 50%;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+        .col-md-8 {
+            flex: 0 0 66.666667%;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+        .col-md-4 {
+            flex: 0 0 33.333333%;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+        .stat-box {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+            font-size: 10px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <!-- Cabeçalho -->
+    <div class="header">
+        <div class="d-flex justify-content-between">
+            <div>
+                <h1>Relatório de Pontos</h1>
+                <p class="mb-0">Gerado em: {{ gerado_em|date:"d/m/Y H:i" }}</p>
+                <p style="margin: 0;"><strong>Período:</strong>
+                    {% if data_inicio %}{{ data_inicio|date:"d/m/Y" }}{% else %}Início{% endif %} 
+                    à 
+                    {% if data_fim %}{{ data_fim|date:"d/m/Y" }}{% else %}Fim{% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informações do Profissional -->
+    <div class="card">
+        <div class="card-title">INFORMAÇÕES DO PROFISSIONAL</div>
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Nome:</strong> {{ profissional.nome }}</p>
+                <p><strong>CPF:</strong> {{ profissional.cpf }}</p>
+                <p><strong>Profissão:</strong> {{ profissional.profissao.nome|default:"Não informado" }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Carga Horária Diária:</strong> {{ carga_horaria_diaria }}</p>
+                <p><strong>Carga Horária Semanal:</strong> {{ carga_horaria_semanal }}</p>
+                {% if vinculo %}
+                <p><strong>Estabelecimento:</strong> {{ vinculo.estabelecimento.nome }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="card">
+        <div class="card-title">ESTATÍSTICAS DO PERÍODO</div>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-box">
+                    <div class="stat-label">Total de Horas</div>
+                    <div class="stat-value">{{ horas_trabalhadas }}</div>
+                    <div class="stat-label">{{ horas_trabalhadas_decimal|floatformat:1 }} horas</div>
+                    {% if diferenca_horas_decimal != 0 %}
+                    <div class="stat-label">
+                        <span class="badge {% if diferenca_horas_decimal > 0 %}bg-success{% else %}bg-danger{% endif %}">
+                            {% if diferenca_horas_decimal > 0 %}+{% endif %}{{ diferenca_horas_decimal|floatformat:1 }}h vs esperado
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-box">
+                    <div class="stat-label">Carga Horária Esperada</div>
+                    <div class="stat-value">{{ carga_horaria_esperada }}</div>
+                    <div class="stat-label">No período selecionado</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-box">
+                    <div class="stat-label">Total de Registros</div>
+                    <div class="stat-value">{{ registros.count }}</div>
+                    <div class="stat-label">Entradas e Saídas</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-box">
+                    <div class="stat-label">Status</div>
+                    <div class="stat-value">
+                        {% if diferenca_horas_decimal >= 0 %}
+                        <span class="badge bg-success">DENTRO DA META</span>
+                        {% else %}
+                        <span class="badge bg-danger">ABAIXO DA META</span>
+                        {% endif %}
+                    </div>
+                    <div class="stat-label">Comparação com carga horária</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Horas por Dia da Semana -->
+    <div class="card">
+        <div class="card-title">HORAS TRABALHADAS POR DIA DA SEMANA</div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Dia da Semana</th>
+                    <th>Horas Trabalhadas</th>
+                    <th>Total de Registros</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dia in horas_por_dia %}
+                <tr>
+                    <td>{{ dia.dia }}</td>
+                    <td>{{ dia.horas }}</td>
+                    <td>{{ dia.registros }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Registros de Ponto -->
+    <div class="card">
+        <div class="card-title">REGISTROS DE PONTO (Últimos {{ registros.count }})</div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Horário</th>
+                    <th>Tipo</th>
+                    <th>Estabelecimento</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for registro in registros %}
+                <tr>
+                    <td>{{ registro.data|date:"d/m/Y" }}</td>
+                    <td>{{ registro.horario|time:"H:i" }}</td>
+                    <td>
+                        <span class="badge {% if registro.tipo == 'ENTRADA' %}bg-success{% else %}bg-danger{% endif %}">
+                            {{ registro.get_tipo_display }}
+                        </span>
+                    </td>
+                    <td>{{ registro.estabelecimento.nome }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center">Nenhum registro encontrado</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Rodapé -->
+    <div class="footer">
+        <p>Sistema TimeFlow - Relatório gerado automaticamente em {{ gerado_em|date:"d/m/Y à\s H:i" }}</p>
+    </div>
+</body>
+</html>

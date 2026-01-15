@@ -1,0 +1,392 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Perfil - PontoFácil</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --info-color: #4895ef;
+            --warning-color: #f72585;
+            --light-bg: #f5f7fb;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --hover-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #2d3748;
+            padding-top: 0;
+        }
+        
+        .container {
+            max-width: 95%;
+            margin-top: 2rem;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            box-shadow: var(--hover-shadow);
+            transform: translateY(-2px);
+        }
+        
+        .card-header {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 1.25rem 1.5rem;
+            background: white;
+        }
+        
+        .navbar {
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .navbar-brand {
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+        
+        .nav-link {
+            transition: all 0.3s;
+            border-radius: 6px;
+            margin: 0 2px;
+            padding: 0.5rem 1rem !important;
+        }
+        
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 0.5rem 1.25rem;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        
+        .form-control {
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+            background-color: #f8fafc;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
+            background-color: white;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+        }
+        
+        .page-title {
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 2rem;
+        }
+        
+        .text-muted {
+            color: #718096 !important;
+        }
+        
+        /* Navbar gradient */
+        .navbar.bg-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+        }
+        
+        /* Profile header */
+        .profile-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+        
+        /* Info cards */
+        .info-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .info-card .label {
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 0.25rem;
+        }
+        
+        .info-card .value {
+            font-size: 1.1rem;
+            color: #2d3748;
+            font-weight: 500;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+            
+            .nav-link {
+                padding: 0.5rem !important;
+                margin: 2px 0;
+            }
+            
+            .navbar-nav {
+                text-align: center;
+            }
+            
+            .container {
+                margin-top: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'core:dashboard' %}">
+                <i class="fas fa-chart-line me-2"></i> PontoFácil
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-white d-flex align-items-center" href="{% url 'core:dashboard' %}">
+                            <i class="fas fa-tachometer-alt me-1"></i> Meu Painel
+                        </a>
+                    </li>
+                    {% if tem_perfil_profissional %}
+                    <li class="nav-item">
+                        <a class="nav-link text-white d-flex align-items-center active" href="{% url 'core:meu_perfil' %}">
+                            <i class="fas fa-user me-1"></i> Meu Perfil
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link text-white d-flex align-items-center" href="{% url 'core:relatorios_gerais' %}">
+                            <i class="fas fa-chart-bar me-1"></i> Relatórios
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white d-flex align-items-center" href="/sair/">
+                            <i class="fas fa-sign-out-alt me-1"></i> Sair
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Cabeçalho -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
+            <div>
+                <h1 class="page-title mb-1">
+                    <i class="fas fa-user-circle me-2" style="color: var(--primary-color);"></i>
+                    Meu Perfil
+                </h1>
+                <p class="text-muted mb-0">Gerencie suas informações pessoais</p>
+            </div>
+        </div>
+
+        <!-- Informações Pessoais -->
+        <div class="card mb-4">
+            <div class="card-header d-flex align-items-center" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+                <h5 class="mb-0 text-white">
+                    <i class="fas fa-id-card me-2"></i> Informações Pessoais
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Nome Completo</label>
+                            <input type="text" value="{{ prof.nome }}" class="form-control" disabled>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" value="{{ prof.email }}" class="form-control" disabled>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">Telefone</label>
+                            <input type="text" value="{{ prof.telefone }}" class="form-control" disabled>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">CPF</label>
+                            <input type="text" value="{{ prof.cpf }}" class="form-control" disabled>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">Município</label>
+                            <input type="text" value="{{ prof.municipio }}" class="form-control" disabled>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Ocupação</label>
+                            <input type="text" value="{{ prof.profissao }}" class="form-control" disabled>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Data de Atualização</label>
+                            <input type="text" value="{{ prof.atualizado_em }}" class="form-control" disabled>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informações Adicionais (se disponíveis) -->
+        {% if prof.estabelecimento or prof.carga_horaria_diaria %}
+        <div class="card mb-4">
+            <div class="card-header d-flex align-items-center" style="background: linear-gradient(135deg, var(--info-color), #3a86ff);">
+                <h5 class="mb-0 text-white">
+                    <i class="fas fa-briefcase me-2"></i> Informações Profissionais
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% if prof.estabelecimento %}
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Estabelecimento</label>
+                            <input type="text" value="{{ prof.estabelecimento.nome }}" class="form-control" disabled>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if prof.carga_horaria_diaria %}
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="form-label">Carga Horária Diária</label>
+                            <input type="text" value="{{ prof.carga_horaria_diaria }}" class="form-control" disabled>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if prof.carga_horaria_semanal %}
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="form-label">Carga Horária Semanal</label>
+                            <input type="text" value="{{ prof.carga_horaria_semanal }}" class="form-control" disabled>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Ações Rápidas -->
+        <div class="card">
+            <div class="card-header d-flex align-items-center" style="background: linear-gradient(135deg, var(--success-color), #4361ee);">
+                <h5 class="mb-0 text-white">
+                    <i class="fas fa-rocket me-2"></i> Ações Rápidas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <a href="{% url 'core:dashboard' %}" class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center">
+                            <i class="fas fa-tachometer-alt me-2"></i> Voltar ao Dashboard
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{% url 'core:relatorio_profissional' prof.id %}" class="btn btn-outline-info w-100 d-flex align-items-center justify-content-center">
+                            <i class="fas fa-chart-line me-2"></i> Meu Relatório
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="/ponto/tela-registro/" class="btn btn-outline-success w-100 d-flex align-items-center justify-content-center">
+                            <i class="fas fa-clock me-2"></i> Registrar Ponto
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botão Voltar -->
+        <div class="mt-4">
+            <button class="btn btn-primary d-flex align-items-center" onclick="goBack()">
+                <i class="fas fa-arrow-left me-2"></i> Voltar
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+
+        // Adicionar classes para melhorar a aparência dos campos desabilitados
+        document.addEventListener('DOMContentLoaded', function() {
+            const disabledInputs = document.querySelectorAll('input[disabled]');
+            disabledInputs.forEach(input => {
+                input.style.backgroundColor = '#f8fafc';
+                input.style.color = '#4a5568';
+                input.style.borderColor = '#e2e8f0';
+            });
+        });
+    </script>
+</body>
+</html>

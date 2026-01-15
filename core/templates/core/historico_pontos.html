@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico - {{ profissional.nome }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <!-- Cabeçalho -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-1">
+                    <i class="fas fa-history text-primary"></i>
+                    Histórico de Pontos
+                </h1>
+                <p class="text-muted mb-0">{{ profissional.nome }} - {{ profissional.cpf }}</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'core:relatorio_profissional' profissional.id %}" class="btn btn-primary">
+                    <i class="fas fa-chart-line"></i> Relatório
+                </a>
+                <a href="{% url 'core:relatorios_gerais' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Filtros</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="data_inicio" class="form-label">Data Início</label>
+                        <input type="date" class="form-control" id="data_inicio" name="data_inicio" value="{{ data_inicio }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="data_fim" class="form-label">Data Fim</label>
+                        <input type="date" class="form-control" id="data_fim" name="data_fim" value="{{ data_fim }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="estabelecimento_id" class="form-label">Estabelecimento</label>
+                        <select class="form-select" id="estabelecimento_id" name="estabelecimento_id">
+                            <option value="">Todos</option>
+                            {% for estab in estabelecimentos %}
+                            <option value="{{ estab.id }}" {% if estabelecimento_id == estab.id|stringformat:"i" %}selected{% endif %}>
+                                {{ estab.nome }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter"></i> Filtrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Estatísticas -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-white bg-primary">
+                    <div class="card-body text-center">
+                        <h6>Total Registros</h6>
+                        <h4>{{ total_registros }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-success">
+                    <div class="card-body text-center">
+                        <h6>Horas Trabalhadas</h6>
+                        <h4>{{ horas_trabalhadas }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-info">
+                    <div class="card-body text-center">
+                        <h6>Dias Trabalhados</h6>
+                        <h4>{{ dias_trabalhados }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-warning">
+                    <div class="card-body text-center">
+                        <h6>Média por Dia</h6>
+                        <h4>{{ media_horas_dia }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Registros por Dia -->
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Registros Detalhados por Dia</h5>
+            </div>
+            <div class="card-body">
+                {% for data, registros_dia in registros_por_dia.items %}
+                <div class="mb-4 border-bottom pb-3">
+                    <h6 class="text-primary">
+                        <i class="fas fa-calendar-day"></i>
+                        {{ data|date:"d/m/Y" }} - 
+                        <span class="badge bg-secondary">{{ horas_por_dia|get_item:data }}</span>
+                    </h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Horário</th>
+                                    <th>Tipo</th>
+                                    <th>Estabelecimento</th>
+                                    <th>Observações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for registro in registros_dia %}
+                                <tr>
+                                    <td>{{ registro.horario|time:"H:i" }}</td>
+                                    <td>
+                                        <span class="badge {% if registro.tipo == 'ENTRADA' %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ registro.get_tipo_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ registro.estabelecimento.nome }}</td>
+                                    <td>
+                                        <small class="text-muted">{{ registro.observacoes|default:"-" }}</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-4 text-muted">
+                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                    <p>Nenhum registro encontrado para o período selecionado.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

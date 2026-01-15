@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeFlow - Sistema de Controle de Ponto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            text-align: center;
+        }
+        .header {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border-radius: 10px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            min-width: 200px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+            transition: all 0.3s;
+        }
+        .btn-ponto {
+            background-color: #28a745;
+        }
+        .btn-ponto:hover {
+            background-color: #218838;
+        }
+        .btn-area {
+            background-color: #6c757d;
+        }
+        .btn-area:hover {
+            background-color: #545b62;
+        }
+        .button-group {
+            margin: 40px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏢 TimeFlow</h1>
+        <p>Sistema de Controle de Ponto Eletrônico</p>
+    </div>
+
+    <h2>Bem-vindo ao Sistema</h2>
+    <p>Escolha uma opção para continuar:</p>
+    
+    <div class="button-group">
+        <!-- BOTÃO PRINCIPAL - REGISTRAR PONTO -->
+        <a href="/ponto/tela-registro/" class="btn btn-ponto">⏰ REGISTRAR PONTO</a>
+        <!-- BOTÃO ÁREA RESTRITA -->
+        <a href="{% url 'core:dashboard' %}" class="btn btn-area">🔐 Área Restrita</a>
+    </div>
+
+    <div style="margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+        <h3>Como funciona:</h3>
+        <ul style="display: inline-block; text-align: left;">
+            <li>✅ <strong>Registrar Ponto</strong> - Para funcionários registrarem entrada/saída</li>
+            <li>🔐 <strong>Área Restrita</strong> - Para gestores acessarem relatórios</li>
+        </ul>
+    </div>
+</body>
+</html>

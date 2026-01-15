@@ -1,0 +1,669 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Ponto - TimeFlow</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --info-color: #4895ef;
+            --warning-color: #f72585;
+            --light-bg: #f5f7fb;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --hover-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #2d3748;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            box-shadow: var(--hover-shadow);
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            border-bottom: none;
+            padding: 2rem 2rem 1rem;
+            text-align: center;
+            background: white;
+        }
+        
+        .card-body {
+            padding: 1rem 2rem 2rem;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        
+        .logo-icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .logo h1 {
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+        }
+        
+        .logo p {
+            color: #718096;
+            font-size: 1.1rem;
+        }
+        
+        .btn {
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 0.75rem 2rem;
+            transition: all 0.3s ease;
+            border: none;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(67, 97, 238, 0.3);
+        }
+        
+        .btn-primary:disabled {
+            background: #cbd5e0;
+            transform: none;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Status indicators */
+        .status-card {
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid;
+        }
+        
+        .status-loading {
+            background: rgba(255, 193, 7, 0.1);
+            border-left-color: #ffc107;
+            color: #856404;
+        }
+        
+        .status-success {
+            background: rgba(40, 167, 69, 0.1);
+            border-left-color: #28a745;
+            color: #155724;
+        }
+        
+        .status-error {
+            background: rgba(220, 53, 69, 0.1);
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
+        
+        .status-icon {
+            font-size: 1.2rem;
+            margin-right: 0.5rem;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Success state */
+        .success-state {
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .success-icon {
+            font-size: 4rem;
+            color: var(--success-color);
+            margin-bottom: 1rem;
+        }
+        
+        .registro-info {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            text-align: left;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .info-value {
+            color: #2d3748;
+            font-weight: 500;
+        }
+        
+        /* CPF validation styles */
+        .cpf-status {
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: none;
+        }
+        
+        .cpf-valid {
+            background: rgba(40, 167, 69, 0.1);
+            color: #155724;
+            border: 1px solid rgba(40, 167, 69, 0.2);
+        }
+        
+        .cpf-invalid {
+            background: rgba(220, 53, 69, 0.1);
+            color: #721c24;
+            border: 1px solid rgba(220, 53, 69, 0.2);
+        }
+        
+        .cpf-loading {
+            background: rgba(255, 193, 7, 0.1);
+            color: #856404;
+            border: 1px solid rgba(255, 193, 7, 0.2);
+        }
+        
+        .form-select:disabled {
+            background-color: #f8f9fa;
+            border-color: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .estabelecimento-info {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+        
+        /* Countdown styles */
+        .countdown {
+            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 1.2em;
+        }
+        
+        .redirect-alert {
+            background: rgba(67, 97, 238, 0.1);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h1>TimeFlow</h1>
+                    <p>Registro de Ponto Eletrônico</p>
+                </div>
+            </div>
+            <!-- DEBUG SECTION (remover em produção) -->
+<div class="mt-3 p-3 bg-light border rounded">
+    <h6>🔍 Debug Info:</h6>
+    <p>Entradas hoje: {{ entradas_count|default:0 }}</p>
+    <p>Saídas hoje: {{ saidas_count|default:0 }}</p>
+    <p>Próximo tipo: {{ registro.proximo_tipo|default:"N/A" }}</p>
+</div>
+            
+            <div class="card-body">
+                <!-- Status da Localização -->
+                <div id="locationStatus" class="status-card status-loading" style="display: none;">
+                    <i class="fas fa-map-marker-alt status-icon"></i>
+                    <span id="locationText">Verificando localização...</span>
+                </div>
+
+                {% if sucesso %}
+                    <!-- Estado de Sucesso com Redirecionamento Automático -->
+                    <div class="success-state">
+                        <div class="success-icon">
+                            {% if registro.dentro_tolerancia %}
+                                <i class="fas fa-check-circle text-success"></i>
+                            {% else %}
+                                <i class="fas fa-exclamation-triangle text-warning"></i>
+                            {% endif %}
+                        </div>
+                        
+                        <h3 class="{% if registro.dentro_tolerancia %}text-success{% else %}text-warning{% endif %} mb-3">
+                            {% if registro.dentro_tolerancia %}Registro Confirmado!{% else %}Registro com Observação{% endif %}
+                        </h3>
+                        
+                        <div class="registro-info">
+                            <div class="info-item">
+                                <span class="info-label">Profissional:</span>
+                                <span class="info-value">{{ profissional.nome }} {{ profissional.sobrenome }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Tipo:</span>
+                                <span class="info-value">{{ tipo }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Horário:</span>
+                                <span class="info-value">{{ horario|time:"H:i" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Local:</span>
+                                <span class="info-value">{{ estabelecimento.nome }}</span>
+                            </div>
+                        </div>
+                        
+                        {% if registro.dentro_tolerancia %}
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <strong>{{ mensagem }}</strong>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>{{ mensagem }}</strong>
+                            </div>
+                        {% endif %}
+
+                        <!-- Contador para redirecionamento -->
+                        <div class="alert alert-info redirect-alert">
+                            <i class="fas fa-clock me-2"></i>
+                            <strong>Redirecionando em <span id="countdown" class="countdown">5</span> segundos...</strong>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'registrar_ponto' %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Novo Registro (Agora)
+                            </a>
+                            <a href="/" class="btn btn-outline-primary">
+                                <i class="fas fa-home me-2"></i>Página Inicial
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Script para redirecionamento automático -->
+                    <script>
+                        let seconds = 5;
+                        const countdownElement = document.getElementById('countdown');
+                        const countdownInterval = setInterval(function() {
+                            seconds--;
+                            countdownElement.textContent = seconds;
+                            
+                            if (seconds <= 0) {
+                                clearInterval(countdownInterval);
+                                window.location.href = "{% url 'registrar_ponto' %}";
+                            }
+                        }, 1000);
+                    </script>
+                {% endif %}
+
+                {% if erro %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>{{ erro }}</strong>
+                    </div>
+                {% endif %}
+
+                {% if not sucesso %}
+                <form method="post" action="{% url 'registrar_ponto' %}" id="pontoForm">
+                    {% csrf_token %}
+                    
+                    <!-- Campos ocultos para coordenadas -->
+                    <input type="hidden" id="latitude" name="latitude">
+                    <input type="hidden" id="longitude" name="longitude">
+                    
+                    <div class="form-group">
+                        <label for="cpf" class="form-label">
+                            <i class="fas fa-id-card me-2"></i>CPF
+                        </label>
+                        <input type="text" id="cpf" name="cpf" class="form-control" 
+                               placeholder="Digite apenas números (11 dígitos)" required 
+                               pattern="[0-9]{11}" title="Digite apenas números (11 dígitos)"
+                               maxlength="11">
+                        <div id="cpfStatus" class="cpf-status"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="estabelecimento_id" class="form-label">
+                            <i class="fas fa-building me-2"></i>Estabelecimento
+                        </label>
+                        <select id="estabelecimento_id" name="estabelecimento_id" class="form-select" required disabled>
+                            <option value="">Selecione o estabelecimento</option>
+                            <!-- Os estabelecimentos serão carregados dinamicamente via JavaScript -->
+                        </select>
+                        <div class="estabelecimento-info" id="estabelecimentoHelp">
+                            Os estabelecimentos serão carregados após a validação do CPF
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                        <i class="fas fa-fingerprint me-2"></i>
+                        <span id="submitText">Registrar Ponto</span>
+                    </button>
+                </form>
+
+                <div class="d-grid gap-2">
+                    <a href="/bemvindo/" class="btn btn-outline-primary">
+                        <i class="fas fa-user me-2"></i>Área do Usuário
+                    </a>
+                    <a href="/" class="btn btn-outline-primary">
+                        <i class="fas fa-home me-2"></i>Página Inicial
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentLocation = null;
+        let estabelecimentoSelecionado = null;
+        let cpfValido = false;
+        let localizacaoValida = false;
+
+        // Formatação automática do CPF
+        document.getElementById('cpf').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 11) value = value.substring(0, 11);
+            e.target.value = value;
+            
+            if (value.length === 11) {
+                validarCPFNoBanco(value);
+            } else {
+                resetarStatusCPF();
+            }
+        });
+
+        // ✅ FUNÇÃO CORRIGIDA: Validar CPF no banco de dados via AJAX
+        function validarCPFNoBanco(cpf) {
+            const cpfStatus = document.getElementById('cpfStatus');
+            const estabelecimentoSelect = document.getElementById('estabelecimento_id');
+            const estabelecimentoHelp = document.getElementById('estabelecimentoHelp');
+            
+            cpfStatus.style.display = 'block';
+            cpfStatus.className = 'cpf-status cpf-loading';
+            cpfStatus.innerHTML = '<span class="loading-spinner"></span> Verificando CPF...';
+
+            // Limpar estabelecimentos anteriores
+            estabelecimentoSelect.innerHTML = '<option value="">Selecione o estabelecimento</option>';
+            estabelecimentoSelect.disabled = true;
+            estabelecimentoHelp.textContent = 'Carregando estabelecimentos...';
+
+            fetch(`/api/ponto/verificar-cpf/?cpf=${cpf}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.valido) {
+                        cpfStatus.className = 'cpf-status cpf-valid';
+                        cpfStatus.innerHTML = `<i class="fas fa-check-circle me-2"></i>${data.mensagem}`;
+                        cpfValido = true;
+
+                        // ✅ CARREGAR ESTABELECIMENTOS DINAMICAMENTE
+                        if (data.estabelecimentos && data.estabelecimentos.length > 0) {
+                            data.estabelecimentos.forEach(estabelecimento => {
+                                const option = document.createElement('option');
+                                option.value = estabelecimento.id;
+                                option.textContent = estabelecimento.nome;
+                                option.setAttribute('data-latitude', estabelecimento.latitude);
+                                option.setAttribute('data-longitude', estabelecimento.longitude);
+                                option.setAttribute('data-raio', estabelecimento.raio_permitido);
+                                estabelecimentoSelect.appendChild(option);
+                            });
+                            estabelecimentoSelect.disabled = false;
+                            estabelecimentoHelp.textContent = `${data.estabelecimentos.length} estabelecimento(s) disponível(is)`;
+                        } else {
+                            cpfStatus.className = 'cpf-status cpf-invalid';
+                            cpfStatus.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>Nenhum estabelecimento vinculado ao seu CPF`;
+                            cpfValido = false;
+                            estabelecimentoHelp.textContent = 'Nenhum estabelecimento disponível';
+                        }
+                    } else {
+                        cpfStatus.className = 'cpf-status cpf-invalid';
+                        cpfStatus.innerHTML = `<i class="fas fa-times-circle me-2"></i>${data.mensagem}`;
+                        cpfValido = false;
+                        estabelecimentoSelect.disabled = true;
+                        estabelecimentoHelp.textContent = 'CPF inválido - estabelecimentos não disponíveis';
+                    }
+                    validarFormulario();
+                })
+                .catch(error => {
+                    console.error('Erro ao verificar CPF:', error);
+                    cpfStatus.className = 'cpf-status cpf-invalid';
+                    cpfStatus.innerHTML = '<i class="fas fa-times-circle me-2"></i>Erro ao verificar CPF';
+                    cpfValido = false;
+                    estabelecimentoSelect.disabled = true;
+                    estabelecimentoHelp.textContent = 'Erro ao carregar estabelecimentos';
+                    validarFormulario();
+                });
+        }
+
+        function resetarStatusCPF() {
+            const cpfStatus = document.getElementById('cpfStatus');
+            const estabelecimentoSelect = document.getElementById('estabelecimento_id');
+            const estabelecimentoHelp = document.getElementById('estabelecimentoHelp');
+            
+            cpfStatus.style.display = 'none';
+            estabelecimentoSelect.innerHTML = '<option value="">Selecione o estabelecimento</option>';
+            estabelecimentoSelect.disabled = true;
+            estabelecimentoHelp.textContent = 'Os estabelecimentos serão carregados após a validação do CPF';
+            
+            cpfValido = false;
+            validarFormulario();
+        }
+
+        // Obter localização do usuário
+        function obterLocalizacao() {
+            const locationStatus = document.getElementById('locationStatus');
+            const locationText = document.getElementById('locationText');
+            locationStatus.style.display = 'block';
+            locationStatus.className = 'status-card status-loading';
+            locationText.innerHTML = '<span class="loading-spinner"></span> Obtendo localização...';
+
+            if (!navigator.geolocation) {
+                locationStatus.className = 'status-card status-error';
+                locationText.innerHTML = '<i class="fas fa-times-circle me-2"></i>Geolocalização não suportada';
+                localizacaoValida = false;
+                validarFormulario();
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    currentLocation = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    };
+                    
+                    document.getElementById('latitude').value = currentLocation.latitude;
+                    document.getElementById('longitude').value = currentLocation.longitude;
+                    
+                    locationStatus.className = 'status-card status-success';
+                    locationText.innerHTML = '<i class="fas fa-check-circle me-2"></i>Localização obtida com sucesso';
+                    localizacaoValida = true;
+                    validarFormulario();
+                },
+                function(error) {
+                    let message = 'Erro ao obter localização: ';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            message = 'Permissão de localização negada';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            message = 'Localização indisponível';
+                            break;
+                        case error.TIMEOUT:
+                            message = 'Tempo limite excedido';
+                            break;
+                        default:
+                            message = 'Erro ao obter localização';
+                    }
+                    locationStatus.className = 'status-card status-error';
+                    locationText.innerHTML = `<i class="fas fa-times-circle me-2"></i>${message}`;
+                    localizacaoValida = false;
+                    validarFormulario();
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 60000
+                }
+            );
+        }
+
+        // Validar formulário completo
+        function validarFormulario() {
+            const submitBtn = document.getElementById('submitBtn');
+            const submitText = document.getElementById('submitText');
+            const estabelecimento = document.getElementById('estabelecimento_id').value;
+            const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
+            
+            if (cpfValido && localizacaoValida && estabelecimento && cpf.length === 11) {
+                submitBtn.disabled = false;
+                submitText.textContent = 'Registrar Ponto';
+            } else {
+                submitBtn.disabled = true;
+                
+                if (!cpfValido && cpf.length === 11) {
+                    submitText.textContent = 'CPF inválido ou inativo';
+                } else if (!localizacaoValida) {
+                    submitText.textContent = 'Localização não permitida';
+                } else if (!estabelecimento) {
+                    submitText.textContent = 'Selecione um estabelecimento';
+                } else if (cpf.length !== 11) {
+                    submitText.textContent = 'Digite um CPF válido';
+                } else {
+                    submitText.textContent = 'Registrar Ponto';
+                }
+            }
+        }
+
+        // Event listeners para validação em tempo real
+        document.getElementById('estabelecimento_id').addEventListener('change', validarFormulario);
+        document.getElementById('cpf').addEventListener('blur', function() {
+            const cpf = this.value.replace(/\D/g, '');
+            if (cpf.length === 11) {
+                validarCPFNoBanco(cpf);
+            }
+        });
+
+        // Validar formulário antes de enviar
+        document.getElementById('pontoForm').addEventListener('submit', function(e) {
+            const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
+            const estabelecimento = document.getElementById('estabelecimento_id').value;
+            
+            if (!cpfValido) {
+                e.preventDefault();
+                alert('CPF não encontrado ou profissional inativo. Verifique seu cadastro.');
+                return;
+            }
+            
+            if (!estabelecimento) {
+                e.preventDefault();
+                alert('Por favor, selecione um estabelecimento');
+                return;
+            }
+            
+            if (!localizacaoValida) {
+                e.preventDefault();
+                alert('Não foi possível validar sua localização. Verifique as permissões do navegador.');
+                return;
+            }
+        });
+
+        // Iniciar obtenção de localização quando a página carregar
+        window.addEventListener('load', function() {
+            obterLocalizacao();
+        });
+
+        // Resetar formulário quando o CPF for alterado significativamente
+        document.getElementById('cpf').addEventListener('input', function(e) {
+            const value = e.target.value.replace(/\D/g, '');
+            if (value.length < 11) {
+                resetarStatusCPF();
+            }
+        });
+    </script>
+</body>
+</html>

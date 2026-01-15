@@ -1,0 +1,138 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <title>Entrar</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="{% static "assets/img/favicon.png" %}"/>
+    <link rel="stylesheet" href="{% static "login/fonts/font-awesome-4.7.0/css/font-awesome.min.css" %}">
+    <link rel="stylesheet" href="{% static "login/css/main.css" %}">
+    <link rel='stylesheet' href='https://netdna.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css'>
+    <style type="text/css">
+        .btn-dark-gray {
+            color: #fff;
+            background-color: #333;
+            border-color: #333;
+            border-radius: 25px;
+        }
+
+        .btn-dark-gray:hover {
+            background-color: #32CD32;
+            border-color: #32CD32;
+        }
+        
+        .btn-point {
+            color: #fff;
+            background-color: #28a745;
+            border-color: #28a745;
+            border-radius: 25px;
+            margin-top: 10px;
+        }
+
+        .btn-point:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid h-100">
+    <div class="row h-100 justify-content-center align-items-center">
+        <div class="col-md-8">
+            <div class="card-group mb-0">
+                <div class="card p-4">
+                    <div class="card-body">
+                        <form class="login100-form validate-form" method='POST'>
+                            {% if form.non_field_errors %}
+                                <div class="alert alert-danger" role="alert">
+                                    {% for error in form.non_field_errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {% csrf_token %}
+                            <span class="login100-form-title">
+                                Iniciar Sessão
+                            </span>
+                            <div class="wrap-input100 validate-input" data-validate="Email valido é preciso: user@gmail.com">
+                                <input class="input100" type="text" name="username" placeholder="Nome de Usuario">
+                                <span class="focus-input100"></span>
+                                <span class="symbol-input100">
+                                    <i class="fa fa-envelope" aria-hidden="true"></i>
+                                </span>
+                            </div>
+                            <div class="wrap-input100 validate-input" data-validate="a senha é obrigatoria">
+                                <input class="input100" type="password" name="password" placeholder="Digite sua Senha">
+                                <span class="focus-input100"></span>
+                                <span class="symbol-input100">
+                                    <i class="fa fa-lock" aria-hidden="true"></i>
+                                </span>
+                            </div>
+                            <div class="container-login100-form-btn">
+                                <button class="login100-form-btn btn btn-dark-gray">
+                                    Login
+                                </button>
+                            </div>
+                            <div class="text-center p-t-12">
+                                <a href="{% url 'usuarios:password_reset' %}">
+                                    <span class="txt2">
+                                        Esqueceu a Senha?
+                                    </span>
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="card p-4" style="background-color:#a8d8f8">
+                    <div class="card-body">
+                        {% if messages %}
+                            <div class="messages">
+                                {% for message in messages %}
+                                    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div>
+                            <span class="login100-form-title">
+                                Primeira vez aqui?
+                            </span>
+                            <p align="justify">Seja bem vindo ao <strong>TimeFlow!</strong></br> 
+                            1 - Crie sua conta para ter acesso ao conteúdo;</br>
+                        2 - Registre seu ponto de forma simples e rápida;</br>
+                    3 - Acompanhe seu histórico de registros.</p>
+                    
+                    <div class="button-group">
+                        <!-- Botão para área restrita -->
+                        <a href="{% url 'usuarios:cadastrar_profissional' %}" class="login100-form-btn btn btn-dark-gray">
+                            <i class="fa fa-user-plus"></i> Solicitar Cadastro!
+                        </a>
+                        
+                        <!-- Botão para registrar ponto (acesso público) -->
+                        <a href="/ponto/tela-registro/" class="login100-form-btn btn btn-point">
+                            <i class="fa fa-clock-o"></i> Registrar Ponto
+                        </a>
+                        
+                        <!-- Link para página inicial -->
+                        <a href="/" class="login100-form-btn btn btn-outline-secondary">
+                            <i class="fa fa-home"></i> Página Inicial
+                        </a>
+                    </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

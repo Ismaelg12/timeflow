@@ -1,0 +1,44 @@
+{% extends "base_login.html" %}
+{% load static %}
+<!-- MENU NAVIGATION-->
+{% block menu %}
+<li class="nav-item mx-0 mx-lg-1">
+    <a class="nav-link py-3 px-0 px-lg-3 rounded js-scroll-trigger" href="{% url 'painel' %}">MEU PAINEL</a>
+</li>
+{% endblock menu %}
+<!-- INICIO DO CONTEÚDO DA PÁGINA -->
+{% block container %} 
+<div class="container content-container" style="width: 90%;">
+    {% block page_title %}
+    <h3 class="text-center">FUNÇOES CADASTRADOS</h3>
+    {% endblock page_title %}
+        <div class="d-flex justify-content-between mb-4" style="margin:14px;">
+        <a href="{% url 'painel' %}" class="btn btn-primary"><i class="fa fa-home"></i> Dashboard</a>   
+               <a href="{% url 'add_atuacao' %}" class="btn btn-success"><i class="fa fa-plus"></i> Função</a>     
+    </div>
+    <div class="table-responsive">
+        <table class="table custom-table tableCursos" id="tableCursos">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th class="text-right">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for prof in atuacao %}
+            <tr>
+                <td>{{ prof.id }}</td>
+                <td>{{ prof.profissao }}</td>
+                <td class="text-right">
+                 <a class="btn btn-primary btn-sm" href="{% url 'editar_atuacao' prof.id %}" title="Editar"><i class='fas fa-sync'></i>
+            </a>
+        </td>
+            </td>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</div>
+{% endblock container %}
+
