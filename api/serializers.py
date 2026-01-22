@@ -3,12 +3,11 @@ from rest_framework import serializers
 from usuarios.models import Profissional
 from ponto.models import RegistroPonto
 from estabelecimentos.models import Estabelecimento
-from datetime import datetime
 
-# ✅ ADICIONE ESTA CLASSE QUE ESTAVA FALTANDO
+# ✅ Serializer para Profissional
 class ProfissionalSerializer(serializers.ModelSerializer):
     estabelecimento_nome = serializers.CharField(source='estabelecimento.nome', read_only=True)
-    profissao_nome = serializers.CharField(source='profissao.nome', read_only=True)
+    profissao_nome = serializers.CharField(source='profissao.profissao', read_only=True)
     nome_completo = serializers.SerializerMethodField()
     
     class Meta:
@@ -17,20 +16,21 @@ class ProfissionalSerializer(serializers.ModelSerializer):
             'id', 'nome', 'sobrenome', 'nome_completo', 'email', 'cpf', 
             'profissao', 'profissao_nome', 'estabelecimento', 
             'estabelecimento_nome', 'horario_entrada', 'horario_saida',
-            'tolerancia_minutos', 'carga_horaria_diaria', 'carga_horaria_semanal'
+            'tolerancia_minutos', 'ativo'
         ]
-        read_only_fields = ['id', 'nome_completo', 'profissao_nome', 'estabelecimento_nome']
     
     def get_nome_completo(self, obj):
         return f"{obj.nome} {obj.sobrenome}"
 
+# ✅ Serializer para Estabelecimento
 class EstabelecimentoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Estabelecimento
-        fields = ['id', 'nome', 'endereco', 'latitude', 'longitude']
+        fields = ['id', 'nome', 'endereco', 'latitude', 'longitude', 'raio_permitido']
 
+# ✅ Serializer para RegistroPonto
 class RegistroPontoSerializer(serializers.ModelSerializer):
-    profissional_nome = serializers.CharField(source='profissional.nome_completo', read_only=True)
+    profissional_nome = serializers.CharField(source='profissional.get_full_name', read_only=True)
     estabelecimento_nome = serializers.CharField(source='estabelecimento.nome', read_only=True)
     data_formatada = serializers.SerializerMethodField()
     horario_formatado = serializers.SerializerMethodField()
@@ -45,11 +45,7 @@ class RegistroPontoSerializer(serializers.ModelSerializer):
             'created_at', 'atraso_minutos', 'saida_antecipada_minutos', 
             'dentro_tolerancia', 'status_tolerancia'
         ]
-        read_only_fields = [
-            'created_at', 'atraso_minutos', 'saida_antecipada_minutos', 
-            'dentro_tolerancia', 'status_tolerancia', 'data_formatada',
-            'horario_formatado', 'profissional_nome', 'estabelecimento_nome'
-        ]
+        read_only_fields = fields
     
     def get_data_formatada(self, obj):
         return obj.data.strftime('%d/%m/%Y')
@@ -67,42 +63,14 @@ class RegistroPontoSerializer(serializers.ModelSerializer):
         else:
             return "No horário"
 
-# ✅ CORREÇÃO: APENAS UMA CLASSE RegistroPontoCreateSerializer
-class RegistroPontoCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RegistroPonto
-        fields = ['profissional', 'estabelecimento', 'data', 'horario', 'tipo', 'latitude', 'longitude']
-        # ✅ CORREÇÃO: Apenas data e horário são read_only
-        read_only_fields = ['data', 'horario']
+# ✅ Serializer para registro de ponto (opcional, não usado nos endpoints públicos)
+class RegistroPontoCreateSerializer(serializers.Serializer):
+    cpf = serializers.CharField(max_length=11, min_length=11)
+    latitude = serializers.FloatField()
+    longitude = serializers.FloatField()
+    biom_hash = serializers.CharField(required=False, allow_blank=True, max_length=255)
     
-    def validate(self, data):
-        # Validações básicas
-        if 'tipo' not in data:
-            raise serializers.ValidationError("Tipo de registro é obrigatório")
-        
-        if data['tipo'].upper() not in ['ENTRADA', 'SAIDA']:
-            raise serializers.ValidationError("Tipo deve ser ENTRADA ou SAIDA")
-        
-        return data
-    
-    def create(self, validated_data):
-        import pytz
-        from django.utils import timezone
-        
-        tz_brasilia = pytz.timezone('America/Sao_Paulo')
-        agora = timezone.now().astimezone(tz_brasilia)
-        
-        # ✅ Define data e horário atuais
-        validated_data['data'] = agora.date()
-        validated_data['horario'] = agora.time()
-        
-        # ✅ Define profissional automaticamente do usuário logado
-        request = self.context.get('request')
-        if request and hasattr(request.user, 'profissional'):
-            validated_data['profissional'] = request.user.profissional
-            
-            # ✅ Define estabelecimento automaticamente do profissional
-            if 'estabelecimento' not in validated_data:
-                validated_data['estabelecimento'] = request.user.profissional.estabelecimento
-        
-        return super().create(validated_data)
+    def validate_cpf(self, value):
+        if not value.isdigit():
+            raise serializers.ValidationError("CPF deve conter apenas números")
+        return value

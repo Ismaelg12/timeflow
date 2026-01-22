@@ -1,0 +1,616 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profissionais - TimeFlow</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --info-color: #4895ef;
+            --warning-color: #f72585;
+            --light-bg: #f5f7fb;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --hover-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #2d3748;
+        }
+        
+        .container {
+            max-width: 90%;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            box-shadow: var(--hover-shadow);
+            transform: translateY(-2px);
+        }
+        
+        .card-header {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 1.25rem 1.5rem;
+            background: white;
+        }
+        
+        .stat-card {
+            border-radius: 12px;
+            transition: transform 0.3s ease;
+            border: none;
+            overflow: hidden;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            opacity: 0.8;
+        }
+        
+        .navbar {
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+        
+        .nav-link {
+            transition: all 0.3s;
+            border-radius: 6px;
+            margin: 0 2px;
+            padding: 0.5rem 1rem !important;
+        }
+        
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 0.5rem 1.25rem;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-info {
+            background-color: var(--info-color);
+            border-color: var(--info-color);
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+            border-color: var(--warning-color);
+        }
+        
+        .btn-outline-success {
+            color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        .btn-outline-success:hover {
+            background-color: var(--success-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        
+        .table th {
+            border-top: none;
+            font-weight: 600;
+            color: #4a5568;
+            background-color: #f7fafc;
+            padding: 1rem 0.75rem;
+        }
+        
+        .table td {
+            padding: 1rem 0.75rem;
+            border-top: 1px solid #edf2f7;
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+        }
+        
+        .page-title {
+            font-weight: 700;
+            color: #1a202c;
+        }
+        
+        .text-muted {
+            color: #718096 !important;
+        }
+        
+        /* Custom colors for cards */
+        .bg-primary-custom {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+        }
+        
+        .bg-info-custom {
+            background: linear-gradient(135deg, var(--info-color), #3a86ff) !important;
+        }
+        
+        .bg-success-custom {
+            background: linear-gradient(135deg, var(--success-color), #4361ee) !important;
+        }
+        
+        .bg-warning-custom {
+            background: linear-gradient(135deg, var(--warning-color), #b5179e) !important;
+        }
+        
+        .bg-secondary-custom {
+            background: linear-gradient(135deg, #718096, #4a5568) !important;
+        }
+        
+        /* Badge styles */
+        .badge {
+            border-radius: 6px;
+            font-weight: 500;
+            padding: 0.35em 0.65em;
+        }
+        
+        /* Navbar gradient */
+        .navbar.bg-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+        }
+        
+        /* Card header gradient */
+        .card-header.bg-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+        }
+        
+        .card-header.bg-success {
+            background: linear-gradient(135deg, var(--success-color), #4361ee) !important;
+        }
+        
+        /* Button hover effects */
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Quick navigation buttons */
+        .btn-block {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        /* Status badges */
+        .badge-status-ativo {
+            background: linear-gradient(135deg, var(--success-color), #4361ee);
+        }
+        
+        .badge-status-inativo {
+            background: linear-gradient(135deg, #718096, #4a5568);
+        }
+        
+        /* Action buttons */
+        .btn-action {
+            padding: 0.4rem 0.8rem;
+            margin: 0 2px;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .stat-card {
+                margin-bottom: 1rem;
+            }
+            
+            .stat-icon {
+                font-size: 2rem;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+            
+            .nav-link {
+                padding: 0.5rem !important;
+                margin: 2px 0;
+            }
+            
+            .navbar-nav {
+                text-align: center;
+            }
+            
+            .table-responsive {
+                font-size: 0.85rem;
+            }
+            
+            .btn-action {
+                padding: 0.3rem 0.6rem;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'core:dashboard' %}">
+                <i class="fas fa-chart-line me-2"></i> PontoFácil - Admin
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="navbar-nav ms-auto">
+                    <a class="nav-link text-white d-flex align-items-center" href="{% url 'core:dashboard' %}">
+                        <i class="fas fa-chart-line me-1"></i> Dashboard
+                    </a>
+                    <a class="nav-link text-white d-flex align-items-center" href="{% url 'core:relatorios_gerais' %}">
+                        <i class="fas fa-chart-bar me-1"></i> Relatórios
+                    </a>
+                    <a class="nav-link text-white d-flex align-items-center" href="/sair/">
+                        <i class="fas fa-sign-out-alt me-1"></i> Sair
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <!-- Cabeçalho -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
+            <div>
+                <h1 class="page-title mb-1">
+                    <i class="fas fa-users me-2" style="color: var(--primary-color);"></i>
+                    Gerenciar Profissionais
+                </h1>
+                <p class="text-muted mb-0">Gerencie todos os profissionais cadastrados no sistema</p>
+            </div>
+            <div class="mt-3 mt-md-0">
+                <a href="{% url 'usuarios:solicitar_cadastro' %}" class="btn btn-success d-flex align-items-center">
+                    <i class="fas fa-user-plus me-2"></i>Novo Profissional
+                </a>
+            </div>
+        </div>
+
+        <!-- Estatísticas -->
+        <div class="row mb-4">
+            <div class="col-xl-4 col-md-6 mb-3">
+                <div class="card text-white bg-primary-custom stat-card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h6 class="card-title opacity-75 mb-1">Total de Profissionais</h6>
+                                <h2 class="card-text fw-bold">{{ page_obj.paginator.count }}</h2>
+                            </div>
+                            <i class="fas fa-users stat-icon"></i>
+                        </div>
+                        <a href="{% url 'usuarios:listar_profissionais' %}" class="stretched-link text-white text-decoration-none mt-auto">
+                            <small class="opacity-75">Ver lista completa →</small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4 col-md-6 mb-3">
+                <div class="card text-white bg-success-custom stat-card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h6 class="card-title opacity-75 mb-1">Profissionais Ativos</h6>
+                                <h2 class="card-text fw-bold">{{ total_ativos }}</h2>
+                            </div>
+                            <i class="fas fa-user-check stat-icon"></i>
+                        </div>
+                        <a href="?status=ativos" class="stretched-link text-white text-decoration-none mt-auto">
+                            <small class="opacity-75">Ver ativos →</small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4 col-md-6 mb-3">
+                <div class="card text-white bg-secondary-custom stat-card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h6 class="card-title opacity-75 mb-1">Aguardando Aprovação</h6>
+                                <h2 class="card-text fw-bold">{{ total_inativos }}</h2>
+                            </div>
+                            <i class="fas fa-user-clock stat-icon"></i>
+                        </div>
+                        <a href="?status=inativos" class="stretched-link text-white text-decoration-none mt-auto">
+                            <small class="opacity-75">Ver pendentes →</small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros e Busca -->
+        <div class="card mb-4">
+            <div class="card-header d-flex align-items-center" style="background: linear-gradient(135deg, var(--info-color), #3a86ff);">
+                <h5 class="mb-0 text-white">
+                    <i class="fas fa-filter me-2"></i> Filtros e Busca
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-filter"></i>
+                            </span>
+                            <select name="status" class="form-select">
+                                <option value="todos" {% if status == 'todos' or not status %}selected{% endif %}>Todos os status</option>
+                                <option value="ativos" {% if status == 'ativos' %}selected{% endif %}>Apenas ativos</option>
+                                <option value="inativos" {% if status == 'inativos' %}selected{% endif %}>Apenas inativos</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" name="busca" class="form-control" 
+                                   placeholder="Buscar por nome, sobrenome ou CPF..." 
+                                   value="{{ busca|default:'' }}">
+                            <button class="btn btn-primary d-flex align-items-center" type="submit">
+                                <i class="fas fa-search me-2"></i>Buscar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                
+                {% if busca or status and status != 'todos' %}
+                <div class="mt-3">
+                    <span class="badge bg-info">
+                        Filtros ativos: 
+                        {% if status and status != 'todos' %}{{ status }}{% endif %}
+                        {% if busca %} | Busca: "{{ busca }}"{% endif %}
+                    </span>
+                    <a href="{% url 'usuarios:listar_profissionais' %}" class="btn btn-sm btn-outline-danger ms-2">
+                        <i class="fas fa-times me-1"></i>Limpar filtros
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Lista de Profissionais -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+                <h5 class="mb-0 text-white d-flex align-items-center">
+                    <i class="fas fa-list me-2"></i> Lista de Profissionais
+                </h5>
+                <span class="badge bg-light text-dark">
+                    {{ page_obj.paginator.count }} profissional{{ page_obj.paginator.count|pluralize:"es" }}
+                </span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="border-0">Nome Completo</th>
+                                <th class="border-0">CPF</th>
+                                <th class="border-0">Profissão</th>
+                                <th class="border-0">Estabelecimento</th>
+                                <th class="border-0">Status</th>
+                                <th class="border-0 text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for profissional in page_obj %}
+                            <tr>
+                                <td class="fw-medium">
+                                    <strong>{{ profissional.sobrenome }}</strong>
+                                    <br>
+                                    <small class="text-muted">ID: {{ profissional.id }}</small>
+                                </td>
+                                <td>
+                                    {{ profissional.cpf }}
+                                    <br>
+                                    <small class="text-muted">{{ profissional.telefone|default:"Sem telefone" }}</small>
+                                </td>
+                                <td>
+                                    {{ profissional.profissao.profissao|default:"-" }}
+                                </td>
+                                <td>
+                                    {{ profissional.estabelecimento.nome|default:"-" }}
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ profissional.estabelecimento.municipio|default:"" }}
+                                    </small>
+                                </td>
+                                <td>
+                                    {% if profissional.ativo %}
+                                        <span class="badge badge-status-ativo">
+                                            <i class="fas fa-check-circle me-1"></i>Ativo
+                                        </span>
+                                        <br>
+                                        <small class="text-muted">Aprovado em {{ profissional.atualizado_em|date:"d/m/Y" }}</small>
+                                    {% else %}
+                                        <span class="badge badge-status-inativo">
+                                            <i class="fas fa-clock me-1"></i>Aguardando
+                                        </span>
+                                        <br>
+                                        <small class="text-muted">Cadastrado em {{ profissional.criado_em|date:"d/m/Y" }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="d-flex justify-content-center">
+                                        <a href="{% url 'usuarios:detalhar_profissional' profissional.id %}" 
+                                           class="btn btn-info btn-action d-flex align-items-center" 
+                                           title="Ver detalhes">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'usuarios:editar_profissional' profissional.id %}" 
+                                           class="btn btn-warning btn-action d-flex align-items-center mx-1" 
+                                           title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        {% if profissional.ativo %}
+                                            <a href="{% url 'usuarios:desativar_profissional' profissional.id %}" 
+                                               class="btn btn-danger btn-action d-flex align-items-center" 
+                                               title="Desativar"
+                                               onclick="return confirm('Tem certeza que deseja desativar {{ profissional.nome }}?');">
+                                                <i class="fas fa-ban"></i>
+                                            </a>
+                                        {% else %}
+                                            <a href="{% url 'usuarios:aprovar_profissional' profissional.id %}" 
+                                               class="btn btn-success btn-action d-flex align-items-center" 
+                                               title="Aprovar cadastro"
+                                               onclick="return confirm('Tem certeza que deseja aprovar o cadastro de {{ profissional.nome }}?');">
+                                                <i class="fas fa-check"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <i class="fas fa-users fa-3x mb-3 opacity-50"></i><br>
+                                    <h5>Nenhum profissional encontrado</h5>
+                                    <p class="mb-3">Não há profissionais cadastrados com os filtros aplicados.</p>
+                                    <a href="{% url 'usuarios:solicitar_cadastro' %}" class="btn btn-success">
+                                        <i class="fas fa-user-plus me-2"></i>Cadastrar primeiro profissional
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Paginação -->
+            {% if page_obj.has_other_pages %}
+            <div class="card-footer">
+                <nav aria-label="Navegação de páginas">
+                    <ul class="pagination justify-content-center mb-0">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" 
+                                   href="?page=1{% if status and status != 'todos' %}&status={{ status }}{% endif %}{% if busca %}&busca={{ busca }}{% endif %}">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" 
+                                   href="?page={{ page_obj.previous_page_number }}{% if status and status != 'todos' %}&status={{ status }}{% endif %}{% if busca %}&busca={{ busca }}{% endif %}">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="fas fa-angle-double-left"></i></span>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="fas fa-angle-left"></i></span>
+                            </li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" 
+                                       href="?page={{ num }}{% if status and status != 'todos' %}&status={{ status }}{% endif %}{% if busca %}&busca={{ busca }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" 
+                                   href="?page={{ page_obj.next_page_number }}{% if status and status != 'todos' %}&status={{ status }}{% endif %}{% if busca %}&busca={{ busca }}{% endif %}">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" 
+                                   href="?page={{ page_obj.paginator.num_pages }}{% if status and status != 'todos' %}&status={{ status }}{% endif %}{% if busca %}&busca={{ busca }}{% endif %}">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="fas fa-angle-right"></i></span>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="fas fa-angle-double-right"></i></span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                    <p class="text-center text-muted mt-2 mb-0">
+                        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                    </p>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Auto-submit do filtro de status quando alterado
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusSelect = document.querySelector('select[name="status"]');
+            if (statusSelect) {
+                statusSelect.addEventListener('change', function() {
+                    this.form.submit();
+                });
+            }
+        });
+    </script>
+</body>
+</html>

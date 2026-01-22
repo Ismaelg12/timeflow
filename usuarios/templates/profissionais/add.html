@@ -126,33 +126,6 @@
             color: #e74c3c;
         }
         
-        /* Password strength */
-        .password-strength {
-            height: 5px;
-            margin-top: 5px;
-            border-radius: 3px;
-        }
-        .strength-0 {
-            background-color: #dc3545;
-            width: 20%;
-        }
-        .strength-1 {
-            background-color: #fd7e14;
-            width: 40%;
-        }
-        .strength-2 {
-            background-color: #ffc107;
-            width: 60%;
-        }
-        .strength-3 {
-            background-color: #28a745;
-            width: 80%;
-        }
-        .strength-4 {
-            background-color: #20c997;
-            width: 100%;
-        }
-        
         /* Terms and conditions */
         .terms-section {
             background: #f7fafc;
@@ -232,17 +205,6 @@
         .invalid-feedback {
             font-size: 0.85rem;
         }
-        
-        /* Password requirements list */
-        .password-requirements ul {
-            padding-left: 1.5rem;
-            margin-bottom: 0;
-        }
-        
-        .password-requirements li {
-            margin-bottom: 0.25rem;
-            font-size: 0.85rem;
-        }
 
         /* Horário calculado */
         .horario-calculado {
@@ -253,18 +215,6 @@
             margin-top: 0.5rem;
             font-size: 0.9rem;
         }
-
-        /* Match indicator */
-        .password-match {
-            font-size: 0.85rem;
-            margin-top: 0.25rem;
-        }
-        .match-valid {
-            color: #28a745;
-        }
-        .match-invalid {
-            color: #dc3545;
-        }
     </style>
 </head>
 <body>
@@ -274,7 +224,7 @@
                 <div class="d-flex align-items-center justify-content-center gap-3">
                     <i class="fas fa-user-plus fa-2x"></i>
                     <div>
-                        <h1 class="h3 mb-0">Cadastro de Profissional</h1>
+                        <h1 class="h3 mb-0">Cadastro de Funcionários</h1>
                         <p class="mb-0 opacity-75">Sistema TimeFlow - Ponto Eletrônico</p>
                     </div>
                 </div>
@@ -285,96 +235,12 @@
                     {% csrf_token %}
                     
                     <!-- Mensagens de erro gerais -->
-                    {% if user_form.non_field_errors %}
+                    {% if form.non_field_errors %}
                     <div class="alert alert-danger">
                         <i class="fas fa-exclamation-triangle me-2"></i>
-                        {{ user_form.non_field_errors }}
+                        {{ form.non_field_errors }}
                     </div>
                     {% endif %}
-
-                    <!-- Seção: Dados de Acesso -->
-                    <div class="form-section">
-                        <h4 class="form-section-title">
-                            <i class="fas fa-key me-2"></i>Dados de Acesso
-                        </h4>
-                        
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="{{ user_form.username.id_for_label }}" class="form-label required-field">
-                                        Nome de Usuário
-                                    </label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">
-                                            <i class="fas fa-user"></i>
-                                        </span>
-                                        {{ user_form.username }}
-                                    </div>
-                                    <small class="form-text text-muted">
-                                        Obrigatório. 150 caracteres ou menos. Letras, números e @/./+/-/_ apenas.
-                                    </small>
-                                    {% if user_form.username.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ user_form.username.errors }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="{{ user_form.password1.id_for_label }}" class="form-label required-field">
-                                        Senha
-                                    </label>
-                                    <div class="input-group">
-                                        {{ user_form.password1 }}
-                                        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="id_password1">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </div>
-                                    <!-- BARRA DE FORÇA DA SENHA -->
-                                    <div class="password-strength strength-0" id="password-strength"></div>
-                                    <!-- LISTA DE REQUISITOS -->
-                                    <small class="form-text text-muted password-requirements">
-                                        <ul class="small">
-                                            <li id="length" class="text-danger"><i class="fas fa-times-circle"></i> Sua senha precisa conter pelo menos 8 caracteres.</li>
-                                            <li id="common" class="text-danger"><i class="fas fa-times-circle"></i> Sua senha não pode ser uma senha comumente utilizada.</li>
-                                            <li id="numeric" class="text-danger"><i class="fas fa-times-circle"></i> Sua senha não pode ser inteiramente numérica.</li>
-                                            <li id="similar" class="text-danger"><i class="fas fa-times-circle"></i> Sua senha não pode ser muito parecida com o resto das suas informações pessoais.</li>
-                                        </ul>
-                                    </small>
-                                    {% if user_form.password1.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ user_form.password1.errors }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="{{ user_form.password2.id_for_label }}" class="form-label required-field">
-                                        Confirmar Senha
-                                    </label>
-                                    <div class="input-group">
-                                        {{ user_form.password2 }}
-                                        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="id_password2">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </div>
-                                    <div id="password-match" class="password-match"></div>
-                                    <small class="form-text text-muted">
-                                        Digite a mesma senha para confirmação.
-                                    </small>
-                                    {% if user_form.password2.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ user_form.password2.errors }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
                     <!-- Seção: Dados Pessoais -->
                     <div class="form-section">
@@ -383,20 +249,20 @@
                         </h4>
                         
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-8">
                                 <div class="form-group">
-                                    <label for="{{ profissional_form.nome.id_for_label }}" class="form-label required-field">
+                                    <label for="{{ form.nome.id_for_label }}" class="form-label required-field">
                                         Nome Completo
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text">
                                             <i class="fas fa-user"></i>
                                         </span>
-                                        {{ profissional_form.nome }}
+                                        {{ form.nome }}
                                     </div>
-                                    {% if profissional_form.nome.errors %}
+                                    {% if form.nome.errors %}
                                     <div class="invalid-feedback d-block">
-                                        {{ profissional_form.nome.errors }}
+                                        {{ form.nome.errors }}
                                     </div>
                                     {% endif %}
                                 </div>
@@ -404,58 +270,41 @@
                             
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="{{ profissional_form.sobrenome.id_for_label }}" class="form-label required-field">
+                                    <label for="{{ form.sobrenome.id_for_label }}" class="form-label required-field">
                                         Nome Social
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text">
                                             <i class="fas fa-user-tag"></i>
                                         </span>
-                                        {{ profissional_form.sobrenome }}
+                                        {{ form.sobrenome }}
                                     </div>
-                                    {% if profissional_form.sobrenome.errors %}
+                                    {% if form.sobrenome.errors %}
                                     <div class="invalid-feedback d-block">
-                                        {{ profissional_form.sobrenome.errors }}
+                                        {{ form.sobrenome.errors }}
                                     </div>
                                     {% endif %}
                                 </div>
                             </div>
                             
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="{{ profissional_form.email.id_for_label }}" class="form-label required-field">
-                                        E-mail
-                                    </label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">
-                                            <i class="fas fa-envelope"></i>
-                                        </span>
-                                        {{ profissional_form.email }}
-                                    </div>
-                                    {% if profissional_form.email.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ profissional_form.email.errors }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
+                            <!-- REMOVI O CAMPO EMAIL - NÃO EXISTE NO SEU MODELO -->
                         </div>
 
                         <div class="row">
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label for="id_telefone" class="form-label required-field">
+                                    <label for="{{ form.telefone.id_for_label }}" class="form-label required-field">
                                         Telefone
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text">
                                             <i class="fas fa-phone"></i>
                                         </span>
-                                        {{ profissional_form.telefone }}
+                                        {{ form.telefone }}
                                     </div>
-                                    {% if profissional_form.telefone.errors %}
+                                    {% if form.telefone.errors %}
                                     <div class="invalid-feedback d-block" id="telefone_error">
-                                        {{ profissional_form.telefone.errors }}
+                                        {{ form.telefone.errors }}
                                     </div>
                                     {% endif %}
                                 </div>
@@ -463,18 +312,18 @@
                             
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label for="{{ profissional_form.cpf.id_for_label }}" class="form-label required-field">
+                                    <label for="{{ form.cpf.id_for_label }}" class="form-label required-field">
                                         CPF
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text">
                                             <i class="fas fa-id-card"></i>
                                         </span>
-                                        {{ profissional_form.cpf }}
+                                        {{ form.cpf }}
                                     </div>
-                                    {% if profissional_form.cpf.errors %}
+                                    {% if form.cpf.errors %}
                                     <div class="invalid-feedback d-block">
-                                        {{ profissional_form.cpf.errors }}
+                                        {{ form.cpf.errors }}
                                     </div>
                                     {% endif %}
                                 </div>
@@ -482,18 +331,18 @@
                             
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="{{ profissional_form.profissao.id_for_label }}" class="form-label required-field">
+                                    <label for="{{ form.profissao.id_for_label }}" class="form-label required-field">
                                         Ocupação
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text">
                                             <i class="fas fa-briefcase"></i>
                                         </span>
-                                        {{ profissional_form.profissao }}
+                                        {{ form.profissao }}
                                     </div>
-                                    {% if profissional_form.profissao.errors %}
+                                    {% if form.profissao.errors %}
                                     <div class="invalid-feedback d-block">
-                                        {{ profissional_form.profissao.errors }}
+                                        {{ form.profissao.errors }}
                                     </div>
                                     {% endif %}
                                 </div>
@@ -510,19 +359,19 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="{{ profissional_form.estabelecimento.id_for_label }}" class="form-label required-field">
+                                    <label for="{{ form.estabelecimento.id_for_label }}" class="form-label required-field">
                                         Estabelecimento
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text">
                                             <i class="fas fa-hospital"></i>
                                         </span>
-                                        {{ profissional_form.estabelecimento }}
+                                        {{ form.estabelecimento }}
                                     </div>
                                     <small class="form-text text-muted">Local de trabalho onde registrará ponto</small>
-                                    {% if profissional_form.estabelecimento.errors %}
+                                    {% if form.estabelecimento.errors %}
                                     <div class="invalid-feedback d-block">
-                                        {{ profissional_form.estabelecimento.errors }}
+                                        {{ form.estabelecimento.errors }}
                                     </div>
                                     {% endif %}
                                 </div>
@@ -530,19 +379,19 @@
                             
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="{{ profissional_form.carga_horaria_diaria.id_for_label }}" class="form-label required-field">
+                                    <label for="{{ form.carga_horaria_diaria.id_for_label }}" class="form-label required-field">
                                         Carga Horária Diária
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text">
                                             <i class="fas fa-clock"></i>
                                         </span>
-                                        {{ profissional_form.carga_horaria_diaria }}
+                                        {{ form.carga_horaria_diaria }}
                                     </div>
                                     <small class="form-text text-muted">Horas trabalhadas por dia</small>
-                                    {% if profissional_form.carga_horaria_diaria.errors %}
+                                    {% if form.carga_horaria_diaria.errors %}
                                     <div class="invalid-feedback d-block">
-                                        {{ profissional_form.carga_horaria_diaria.errors }}
+                                        {{ form.carga_horaria_diaria.errors }}
                                     </div>
                                     {% endif %}
                                 </div>
@@ -550,19 +399,19 @@
                             
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="{{ profissional_form.carga_horaria_semanal.id_for_label }}" class="form-label required-field">
+                                    <label for="{{ form.carga_horaria_semanal.id_for_label }}" class="form-label required-field">
                                         Carga Horária Semanal
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text">
                                             <i class="fas fa-calendar-week"></i>
                                         </span>
-                                        {{ profissional_form.carga_horaria_semanal }}
+                                        {{ form.carga_horaria_semanal }}
                                     </div>
                                     <small class="form-text text-muted">Horas trabalhadas por semana</small>
-                                    {% if profissional_form.carga_horaria_semanal.errors %}
+                                    {% if form.carga_horaria_semanal.errors %}
                                     <div class="invalid-feedback d-block">
-                                        {{ profissional_form.carga_horaria_semanal.errors }}
+                                        {{ form.carga_horaria_semanal.errors }}
                                     </div>
                                     {% endif %}
                                 </div>
@@ -570,7 +419,7 @@
                         </div>
                     </div>
 
-                    <!-- NOVA SEÇÃO: Horários de Trabalho -->
+                    <!-- SEÇÃO: Horários de Trabalho -->
                     <div class="form-section">
                         <h4 class="form-section-title">
                             <i class="fas fa-clock me-2"></i>Horários de Trabalho
@@ -579,21 +428,21 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="{{ profissional_form.horario_entrada.id_for_label }}" class="form-label required-field">
+                                    <label for="{{ form.horario_entrada.id_for_label }}" class="form-label required-field">
                                         Horário de Entrada
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text">
                                             <i class="fas fa-sign-in-alt"></i>
                                         </span>
-                                        {{ profissional_form.horario_entrada }}
+                                        {{ form.horario_entrada }}
                                     </div>
                                     <small class="form-text text-muted">
-                                        {{ profissional_form.horario_entrada.help_text }}
+                                        {{ form.horario_entrada.help_text }}
                                     </small>
-                                    {% if profissional_form.horario_entrada.errors %}
+                                    {% if form.horario_entrada.errors %}
                                     <div class="invalid-feedback d-block">
-                                        {{ profissional_form.horario_entrada.errors }}
+                                        {{ form.horario_entrada.errors }}
                                     </div>
                                     {% endif %}
                                 </div>
@@ -601,21 +450,21 @@
                             
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="{{ profissional_form.horario_saida.id_for_label }}" class="form-label required-field">
+                                    <label for="{{ form.horario_saida.id_for_label }}" class="form-label required-field">
                                         Horário de Saída
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text">
                                             <i class="fas fa-sign-out-alt"></i>
                                         </span>
-                                        {{ profissional_form.horario_saida }}
+                                        {{ form.horario_saida }}
                                     </div>
                                     <small class="form-text text-muted">
-                                        {{ profissional_form.horario_saida.help_text }}
+                                        {{ form.horario_saida.help_text }}
                                     </small>
-                                    {% if profissional_form.horario_saida.errors %}
+                                    {% if form.horario_saida.errors %}
                                     <div class="invalid-feedback d-block">
-                                        {{ profissional_form.horario_saida.errors }}
+                                        {{ form.horario_saida.errors }}
                                     </div>
                                     {% endif %}
                                 </div>
@@ -623,21 +472,21 @@
                             
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="{{ profissional_form.tolerancia_minutos.id_for_label }}" class="form-label required-field">
+                                    <label for="{{ form.tolerancia_minutos.id_for_label }}" class="form-label required-field">
                                         Tolerância
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text">
                                             <i class="fas fa-user-clock"></i>
                                         </span>
-                                        {{ profissional_form.tolerancia_minutos }}
+                                        {{ form.tolerancia_minutos }}
                                     </div>
                                     <small class="form-text text-muted">
-                                        {{ profissional_form.tolerancia_minutos.help_text }}
+                                        {{ form.tolerancia_minutos.help_text }}
                                     </small>
-                                    {% if profissional_form.tolerancia_minutos.errors %}
+                                    {% if form.tolerancia_minutos.errors %}
                                     <div class="invalid-feedback d-block">
-                                        {{ profissional_form.tolerancia_minutos.errors }}
+                                        {{ form.tolerancia_minutos.errors }}
                                     </div>
                                     {% endif %}
                                 </div>
@@ -659,18 +508,13 @@
                     <!-- Seção: Termos e Condições -->
                     <div class="terms-section">
                         <div class="form-check">
-                            <input type="checkbox" 
-                                   class="form-check-input" 
-                                   id="{{ profissional_form.termo_uso.id_for_label }}" 
-                                   name="{{ profissional_form.termo_uso.html_name }}" 
-                                   {% if profissional_form.termo_uso.value %}checked{% endif %}
-                                   required>
-                            <label class="form-check-label required-field" for="{{ profissional_form.termo_uso.id_for_label }}">
+                            {{ form.termo_uso }}
+                            <label class="form-check-label required-field" for="{{ form.termo_uso.id_for_label }}">
                                 Eu li e aceito os <span class="terms-link" data-bs-toggle="modal" data-bs-target="#termosModal">Termos de Uso e Política de Privacidade</span>
                             </label>
-                            {% if profissional_form.termo_uso.errors %}
+                            {% if form.termo_uso.errors %}
                             <div class="invalid-feedback d-block">
-                                {{ profissional_form.termo_uso.errors }}
+                                {{ form.termo_uso.errors }}
                             </div>
                             {% endif %}
                         </div>
@@ -679,7 +523,7 @@
                     <!-- Botões de Ação -->
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mt-4">
                         <div>
-                            <a href="{% url 'usuarios:login' %}" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja cancelar? Todas as informações serão perdidas.');">
+                            <a href="{% url 'core:dashboard' %}" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja cancelar? Todas as informações serão perdidas.');">
                                 <i class="fas fa-times me-2"></i>Cancelar
                             </a>
                         </div>
@@ -727,7 +571,7 @@
                     </ul>
                     
                     <h6 class="mt-4">2. Coleta e Uso de Dados</h6>
-                    <p><strong>Dados coletados:</strong> nome completo, CPF, e-mail, telefone, dados profissionais e registros de ponto.</p>
+                    <p><strong>Dados coletados:</strong> nome completo, CPF, telefone, dados profissionais e registros de ponto.</p>
                     <p><strong>Finalidade:</strong> Os dados são utilizados exclusivamente para gestão de ponto eletrônico e cumprimento de obrigações trabalhistas.</p>
                     
                     <h6 class="mt-4">3. Segurança da Informação</h6>
@@ -781,111 +625,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // ✅ CORREÇÃO: Função para mostrar/esconder senha
-            function setupPasswordToggle() {
-                const toggleButtons = document.querySelectorAll('.toggle-password');
-                
-                toggleButtons.forEach(button => {
-                    button.addEventListener('click', function() {
-                        const targetId = this.getAttribute('data-target');
-                        const passwordInput = document.getElementById(targetId);
-                        const icon = this.querySelector('i');
-                        
-                        if (passwordInput.type === 'password') {
-                            passwordInput.type = 'text';
-                            icon.classList.remove('fa-eye');
-                            icon.classList.add('fa-eye-slash');
-                        } else {
-                            passwordInput.type = 'password';
-                            icon.classList.remove('fa-eye-slash');
-                            icon.classList.add('fa-eye');
-                        }
-                    });
-                });
-            }
-
-            // ✅ CORREÇÃO: Validação em tempo real das senhas
-            function setupPasswordValidation() {
-                const password1 = document.getElementById('id_password1');
-                const password2 = document.getElementById('id_password2');
-                const matchIndicator = document.getElementById('password-match');
-                
-                function checkPasswordMatch() {
-                    if (password1.value && password2.value) {
-                        if (password1.value === password2.value) {
-                            matchIndicator.innerHTML = '<i class="fas fa-check-circle"></i> As senhas conferem';
-                            matchIndicator.className = 'password-match match-valid';
-                            password2.classList.add('is-valid');
-                            password2.classList.remove('is-invalid');
-                        } else {
-                            matchIndicator.innerHTML = '<i class="fas fa-times-circle"></i> As senhas não conferem';
-                            matchIndicator.className = 'password-match match-invalid';
-                            password2.classList.add('is-invalid');
-                            password2.classList.remove('is-valid');
-                        }
-                    } else {
-                        matchIndicator.innerHTML = '';
-                        password2.classList.remove('is-valid', 'is-invalid');
-                    }
-                }
-                
-                password1.addEventListener('input', checkPasswordMatch);
-                password2.addEventListener('input', checkPasswordMatch);
-            }
-
-            // ✅ CORREÇÃO: Validação de senha em tempo real
-            function setupPasswordStrength() {
-                const passwordInput = document.getElementById('id_password1');
-                
-                passwordInput.addEventListener('input', function(e) {
-                    const password = e.target.value;
-                    const strengthBar = document.getElementById('password-strength');
-                    const lengthCheck = document.getElementById('length');
-                    const commonCheck = document.getElementById('common');
-                    const numericCheck = document.getElementById('numeric');
-                    const similarCheck = document.getElementById('similar');
-                    
-                    // Verifica o comprimento
-                    const hasLength = password.length >= 8;
-                    lengthCheck.className = hasLength ? 'text-success' : 'text-danger';
-                    lengthCheck.innerHTML = hasLength ? 
-                        '<i class="fas fa-check-circle"></i> Sua senha precisa conter pelo menos 8 caracteres.' : 
-                        '<i class="fas fa-times-circle"></i> Sua senha precisa conter pelo menos 8 caracteres.';
-                    
-                    // Verifica se é comum (simulação)
-                    const isCommon = ['password', '12345678', 'qwerty', 'senha123'].includes(password.toLowerCase());
-                    commonCheck.className = !isCommon ? 'text-success' : 'text-danger';
-                    commonCheck.innerHTML = !isCommon ? 
-                        '<i class="fas fa-check-circle"></i> Sua senha não pode ser uma senha comumente utilizada.' : 
-                        '<i class="fas fa-times-circle"></i> Sua senha não pode ser uma senha comumente utilizada.';
-                    
-                    // Verifica se é totalmente numérica
-                    const isNumeric = /^\d+$/.test(password);
-                    numericCheck.className = !isNumeric ? 'text-success' : 'text-danger';
-                    numericCheck.innerHTML = !isNumeric ? 
-                        '<i class="fas fa-check-circle"></i> Sua senha não pode ser inteiramente numérica.' : 
-                        '<i class="fas fa-times-circle"></i> Sua senha não pode ser inteiramente numérica.';
-                    
-                    // Verifica se é similar a outras informações (simulação)
-                    const username = document.getElementById('id_username').value;
-                    const isSimilar = username && password.toLowerCase().includes(username.toLowerCase());
-                    similarCheck.className = !isSimilar ? 'text-success' : 'text-danger';
-                    similarCheck.innerHTML = !isSimilar ? 
-                        '<i class="fas fa-check-circle"></i> Sua senha não pode ser muito parecida com o resto das suas informações pessoais.' : 
-                        '<i class="fas fa-times-circle"></i> Sua senha não pode ser muito parecida com o resto das suas informações pessoais.';
-                    
-                    // Calcula força da senha
-                    let strength = 0;
-                    if (password.length >= 8) strength++;
-                    if (/[A-Z]/.test(password)) strength++;
-                    if (/[0-9]/.test(password)) strength++;
-                    if (/[^A-Za-z0-9]/.test(password)) strength++;
-                    
-                    // Atualiza barra de força
-                    strengthBar.className = 'password-strength strength-' + strength;
-                });
-            }
-
             // Máscara para telefone
             function mascaraFone(event) {
                 var input = event.target;
@@ -1016,9 +755,6 @@
             }
 
             // Inicializar todas as funcionalidades
-            setupPasswordToggle();
-            setupPasswordValidation();
-            setupPasswordStrength();
             setupCargaHoraria();
             setupCPFValidation();
             setupJornadaCalculo();
@@ -1031,14 +767,38 @@
 
             // Validação do formulário antes do envio
             document.getElementById('cadastroForm').addEventListener('submit', function(e) {
-                const password1 = document.getElementById('id_password1');
-                const password2 = document.getElementById('id_password2');
-                
-                if (password1.value !== password2.value) {
+                const termoUso = document.getElementById('id_termo_uso');
+                if (!termoUso || !termoUso.checked) {
                     e.preventDefault();
-                    alert('As senhas não conferem. Por favor, corrija antes de enviar o formulário.');
-                    password2.focus();
+                    alert('Você precisa aceitar os termos de uso para continuar.');
+                    return false;
                 }
+                
+                // Validação de horários
+                const entrada = document.getElementById('id_horario_entrada');
+                const saida = document.getElementById('id_horario_saida');
+                
+                if (entrada.value && saida.value) {
+                    const entradaHora = entrada.value.split(':')[0];
+                    const entradaMinuto = entrada.value.split(':')[1];
+                    const saidaHora = saida.value.split(':')[0];
+                    const saidaMinuto = saida.value.split(':')[1];
+                    
+                    const entradaTotal = parseInt(entradaHora) * 60 + parseInt(entradaMinuto);
+                    const saidaTotal = parseInt(saidaHora) * 60 + parseInt(saidaMinuto);
+                    
+                    // Ajusta se for no dia seguinte
+                    const saidaAjustada = saidaTotal < entradaTotal ? saidaTotal + 1440 : saidaTotal;
+                    
+                    if (saidaAjustada <= entradaTotal) {
+                        e.preventDefault();
+                        alert('O horário de saída deve ser após o horário de entrada.');
+                        saida.focus();
+                        return false;
+                    }
+                }
+                
+                return true;
             });
         });
     </script>

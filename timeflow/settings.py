@@ -59,7 +59,7 @@ INSTALLED_APPS = [
 ]
 
 # Custom User Model
-AUTH_USER_MODEL = 'usuarios.Usuario'
+AUTH_USER_MODEL = 'auth.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -187,7 +187,32 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # core/settings.py
 
 # Configure o LOGIN_REDIRECT_URL para apontar para /bemvindo/
-LOGIN_REDIRECT_URL = '/bemvindo/'
-LOGOUT_REDIRECT_URL = '/'
-LOGIN_URL = '/login/'
 
+LOGIN_REDIRECT_URL = '/'  # ✅ Para onde ir após login bem-sucedido
+LOGOUT_REDIRECT_URL = '/'  # ✅ Para onde ir após logout
+
+# settings.py - Adicione na seção LOGGING
+# settings.py
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'api.views': {
+            'handlers': ['console'],
+            'level': 'DEBUG',  # ✅ MUDE PARA DEBUG
+            'propagate': True,
+        },
+    },
+}

@@ -1,0 +1,331 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ profissional.nome }} - TimeFlow</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f7fb;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #4361ee, #3f37c9);
+            color: white;
+            border-bottom: none;
+            border-radius: 15px 15px 0 0 !important;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4361ee, #3f37c9);
+            border: none;
+            font-weight: 600;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+            border: none;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            border: none;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #218838);
+            border: none;
+        }
+        
+        .badge {
+            padding: 0.5em 1em;
+            font-weight: 600;
+        }
+        
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .card-body {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <!-- Cabeçalho -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 text-primary mb-1">
+                    <i class="fas fa-user me-2"></i>{{ profissional.nome }} {{ profissional.sobrenome }}
+                </h1>
+                <p class="text-muted mb-0">Detalhes do profissional</p>
+            </div>
+            <div>
+                <a href="{% url 'usuarios:listar_profissionais' %}" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-arrow-left me-2"></i>Voltar
+                </a>
+                <a href="{% url 'usuarios:editar_profissional' profissional.id %}" class="btn btn-warning">
+                    <i class="fas fa-edit me-2"></i>Editar
+                </a>
+            </div>
+        </div>
+        
+        <!-- Status -->
+        <div class="mb-4">
+            {% if profissional.ativo %}
+                <span class="badge bg-success fs-6 p-2">
+                    <i class="fas fa-check-circle me-1"></i>Ativo
+                </span>
+            {% else %}
+                <span class="badge bg-secondary fs-6 p-2">
+                    <i class="fas fa-ban me-1"></i>Inativo
+                </span>
+            {% endif %}
+        </div>
+        
+        <!-- Informações -->
+        <div class="row">
+            <!-- Dados Pessoais -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-id-card me-2"></i> Dados Pessoais
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-sm-4">
+                                <strong>Nome:</strong>
+                            </div>
+                            <div class="col-sm-8">
+                                {{ profissional.nome }}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-sm-4">
+                                <strong>Sobrenome:</strong>
+                            </div>
+                            <div class="col-sm-8">
+                                {{ profissional.sobrenome }}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-sm-4">
+                                <strong>CPF:</strong>
+                            </div>
+                            <div class="col-sm-8">
+                                {{ profissional.cpf }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <strong>Profissão:</strong>
+                            </div>
+                            <div class="col-sm-8">
+                                {{ profissional.profissao|default:"-" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Carga Horária -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-clock me-2"></i> Carga Horária
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-sm-6">
+                                <strong>Diária:</strong>
+                            </div>
+                            <div class="col-sm-6">
+                                {{ profissional.get_carga_horaria_diaria_display|default:"-" }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <strong>Semanal:</strong>
+                            </div>
+                            <div class="col-sm-6">
+                                {{ profissional.get_carga_horaria_semanal_display|default:"-" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Vínculo Profissional -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-building me-2"></i> Vínculo Profissional
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-sm-4">
+                                <strong>Estabelecimento:</strong>
+                            </div>
+                            <div class="col-sm-8">
+                                {{ profissional.estabelecimento|default:"-" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Horários de Trabalho -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-calendar-alt me-2"></i> Horários de Trabalho
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-sm-4">
+                                <strong>Entrada:</strong>
+                            </div>
+                            <div class="col-sm-8">
+                                {{ profissional.horario_entrada|default:"-" }}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-sm-4">
+                                <strong>Saída:</strong>
+                            </div>
+                            <div class="col-sm-8">
+                                {{ profissional.horario_saida|default:"-" }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <strong>Tolerância:</strong>
+                            </div>
+                            <div class="col-sm-8">
+                                {{ profissional.tolerancia_minutos|default:"0" }} minutos
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Datas -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-calendar me-2"></i> Datas
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-2">
+                            <div class="col-sm-6">
+                                <small class="text-muted">Cadastrado em:</small>
+                            </div>
+                            <div class="col-sm-6">
+                                <small>{{ profissional.criado_em|date:"d/m/Y H:i" }}</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <small class="text-muted">Atualizado em:</small>
+                            </div>
+                            <div class="col-sm-6">
+                                <small>{{ profissional.atualizado_em|date:"d/m/Y H:i" }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Registros Recentes (se existirem) -->
+        {% if registros_recentes %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i> Registros Recentes (últimos 10)
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Horário</th>
+                                <th>Tipo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for registro in registros_recentes %}
+                            <tr>
+                                <td>{{ registro.data|date:"d/m/Y" }}</td>
+                                <td>{{ registro.horario|time:"H:i" }}</td>
+                                <td>
+                                    {% if registro.tipo == 'ENTRADA' %}
+                                        <span class="badge bg-success">Entrada</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Saída</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Ações -->
+        <div class="mt-4 pt-4 border-top">
+            <div class="d-flex justify-content-between">
+                <div>
+                    {% if profissional.ativo %}
+                        <a href="{% url 'usuarios:desativar_profissional' profissional.id %}" class="btn btn-danger">
+                            <i class="fas fa-ban me-2"></i>Desativar Profissional
+                        </a>
+                    {% else %}
+                        <a href="{% url 'usuarios:aprovar_profissional' profissional.id %}" class="btn btn-success">
+                            <i class="fas fa-check me-2"></i>Aprovar Cadastro
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="text-muted">
+                    <small>
+                        <i class="fas fa-id-badge me-1"></i>ID: {{ profissional.id }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -241,20 +241,6 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <div class="navbar-nav ms-auto">
-                    <a class="nav-link text-white d-flex align-items-center" href="{% url 'usuarios:profissionais' %}">
-                        <i class="fas fa-users me-1"></i> Profissionais
-                    </a>
-                    {% if tem_perfil_profissional %}
-                    <a class="nav-link text-white d-flex align-items-center" href="{% url 'core:meu_perfil' %}">
-                        <i class="fas fa-user me-1"></i> Meu Perfil
-                    </a>
-                    {% endif %}
-                    <a class="nav-link text-white d-flex align-items-center" href="{% url 'core:relatorios_gerais' %}">
-                        <i class="fas fa-chart-bar me-1"></i> Relatórios
-                    </a>
-                    <a class="nav-link text-white d-flex align-items-center" href="/admin/">
-                        <i class="fas fa-cog me-1"></i> Admin Django
-                    </a>
                     <a class="nav-link text-white d-flex align-items-center" href="/sair/">
                         <i class="fas fa-sign-out-alt me-1"></i> Sair
                     </a>
@@ -277,7 +263,7 @@
 
         <!-- Estatísticas -->
         <div class="row mb-4">
-            <div class="col-xl-3 col-md-6 mb-3">
+            <div class="col-xl-4 col-md-6 mb-3">
                 <div class="card text-white bg-primary-custom stat-card h-100">
                     <div class="card-body d-flex flex-column">
                         <div class="d-flex justify-content-between align-items-start mb-3">
@@ -287,14 +273,11 @@
                             </div>
                             <i class="fas fa-users stat-icon"></i>
                         </div>
-                        <a href="{% url 'usuarios:profissionais' %}" class="stretched-link text-white text-decoration-none mt-auto">
-                            <small class="opacity-75">Ver todos →</small>
-                        </a>
                     </div>
                 </div>
             </div>
 
-            <div class="col-xl-3 col-md-6 mb-3">
+            <div class="col-xl-4 col-md-6 mb-3">
                 <div class="card text-white bg-success-custom stat-card h-100">
                     <div class="card-body d-flex flex-column">
                         <div class="d-flex justify-content-between align-items-start mb-3">
@@ -304,14 +287,11 @@
                             </div>
                             <i class="fas fa-building stat-icon"></i>
                         </div>
-                        <a href="/admin/estabelecimentos/estabelecimento/" class="stretched-link text-white text-decoration-none mt-auto">
-                            <small class="opacity-75">Gerenciar →</small>
-                        </a>
                     </div>
                 </div>
             </div>
 
-            <div class="col-xl-3 col-md-6 mb-3">
+            <div class="col-xl-4 col-md-6 mb-3">
                 <div class="card text-white bg-info-custom stat-card h-100">
                     <div class="card-body d-flex flex-column">
                         <div class="d-flex justify-content-between align-items-start mb-3">
@@ -322,26 +302,6 @@
                             </div>
                             <i class="fas fa-clock stat-icon"></i>
                         </div>
-                        <a href="{% url 'core:relatorios_gerais' %}" class="stretched-link text-white text-decoration-none mt-auto">
-                            <small class="opacity-75">Ver relatórios →</small>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3 col-md-6 mb-3">
-                <div class="card text-white bg-warning-custom stat-card h-100">
-                    <div class="card-body d-flex flex-column">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div>
-                                <h6 class="card-title opacity-75 mb-1">Municípios</h6>
-                                <h2 class="card-text fw-bold">{{ total_municipios }}</h2>
-                            </div>
-                            <i class="fas fa-map-marker-alt stat-icon"></i>
-                        </div>
-                        <a href="/admin/municipio/municipio/" class="stretched-link text-white text-decoration-none mt-auto">
-                            <small class="opacity-75">Gerenciar →</small>
-                        </a>
                     </div>
                 </div>
             </div>
@@ -356,54 +316,19 @@
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-3 mb-3">
+                    <div class="col-md-4 mb-3">
                         <a href="{% url 'core:relatorios_gerais' %}" class="btn btn-info w-100 d-flex align-items-center justify-content-center">
                             <i class="fas fa-chart-bar me-2"></i> Relatórios Gerais
                         </a>
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <a href="{% url 'usuarios:profissionais' %}" class="btn btn-success w-100 d-flex align-items-center justify-content-center">
+                    <div class="col-md-4 mb-3">
+                        <a href="{% url 'usuarios:listar_profissionais' %}" class="btn btn-success w-100 d-flex align-items-center justify-content-center">
                             <i class="fas fa-users me-2"></i> Gerenciar Profissionais
                         </a>
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <a href="/admin/estabelecimentos/estabelecimento/" class="btn btn-warning w-100 d-flex align-items-center justify-content-center">
-                            <i class="fas fa-building me-2"></i> Estabelecimentos
-                        </a>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <a href="/admin/municipio/municipio/" class="btn btn-secondary w-100 d-flex align-items-center justify-content-center">
-                            <i class="fas fa-map-marker-alt me-2"></i> Municípios
-                        </a>
-                    </div>
-                </div>
-                
-                <!-- Segunda linha de botões -->
-                <div class="row mt-2">
-                    <div class="col-md-3 mb-3">
-                        <a href="{% url 'usuarios:cadastrar_profissional' %}" class="btn btn-outline-success w-100 d-flex align-items-center justify-content-center">
-                            <i class="fas fa-user-plus me-2"></i> Novo Profissional
-                        </a>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        {% if tem_perfil_profissional %}
-                        <a href="{% url 'core:meu_perfil' %}" class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center">
-                            <i class="fas fa-id-card me-2"></i> Meu Perfil
-                        </a>
-                        {% else %}
-                        <a href="/admin/usuarios/profissional/add/" class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center">
-                            <i class="fas fa-user-cog me-2"></i> Criar Perfil
-                        </a>
-                        {% endif %}
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <a href="/ponto/tela-registro/" class="btn btn-outline-info w-100 d-flex align-items-center justify-content-center">
-                            <i class="fas fa-clock me-2"></i> Registrar Ponto
-                        </a>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <a href="/" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center">
-                            <i class="fas fa-home me-2"></i> Página Inicial
+                    <div class="col-md-4 mb-3">
+                        <a href="{% url 'usuarios:solicitar_cadastro' %}" class="btn btn-outline-success w-100 d-flex align-items-center justify-content-center">
+                            <i class="fas fa-user-plus me-2"></i> Novo Funcionário
                         </a>
                     </div>
                 </div>
@@ -452,7 +377,7 @@
                                 </td>
                                 <td>
                                     <div class="btn-group">
-                                        <a href="{% url 'usuarios:profissional_detalhe' registro.profissional.id %}" 
+                                        <a href="{% url 'usuarios:detalhar_profissional' registro.profissional.id %}" 
                                            class="btn btn-info btn-sm d-flex align-items-center" title="Ver profissional">
                                             <i class="fas fa-user"></i>
                                         </a>

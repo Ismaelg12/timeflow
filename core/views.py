@@ -32,16 +32,15 @@ def dashboard(request):
     Se usuário comum tentar acessar, redireciona para seus relatórios pessoais
     """
     # ✅ VERIFICAÇÃO DE TIPO DE USUÁRIO - CORREÇÃO CRÍTICA
-    if not request.user.is_superuser:
+    if not request.user.is_superuser and not request.user.is_staff:
         try:
             # Redireciona usuários comuns para seus relatórios pessoais
             profissional = Profissional.objects.get(usuario=request.user)
-            # ✅ CORREÇÃO: Use o nome correto da URL
             return redirect('core:relatorio_profissional', profissional_id=profissional.id)
         except Profissional.DoesNotExist:
-            # Se não tem perfil profissional, faz logout
+            # Se não tem perfil profissional, vai para login
             messages.error(request, "Perfil não encontrado.")
-            return redirect('logout')
+            return redirect('usuarios:login')  # ✅ CORREÇÃO: Vai para a URL de login correta
     
     # ✅ APENAS SUPERUSERS CHEGAM AQUI
     # Estatísticas gerais

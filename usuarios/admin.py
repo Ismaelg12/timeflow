@@ -1,37 +1,27 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
-from .models import Usuario, Profissional, AreaAtuacao, LogAtividade
-
-@admin.register(Usuario)
-class CustomUserAdmin(UserAdmin):
-    list_display = ['username', 'email', 'first_name', 'last_name', 'is_staff', 'is_active']
-    list_filter = ['is_staff', 'is_superuser', 'is_active']
-    search_fields = ['username', 'email', 'first_name', 'last_name']
+from .models import Profissional, AreaAtuacao
 
 @admin.register(Profissional)
 class ProfissionalAdmin(admin.ModelAdmin):
     list_display = [
-        'get_full_name', 
+        'nome_completo', 
         'profissao', 
         'estabelecimento',
-        'carga_horaria_diaria',
+        'carga_horaria_diaria_display',
         'tolerancia_minutos',
-        'ativo'
+        'ativo',
+        'criado_em'
     ]
     list_filter = ['ativo', 'profissao', 'estabelecimento']
-    search_fields = ['nome', 'sobrenome', 'cpf', 'usuario__username', 'email']
-    raw_id_fields = ['usuario', 'estabelecimento']
-    list_editable = ['ativo', 'estabelecimento', 'carga_horaria_diaria', 'tolerancia_minutos']
+    search_fields = ['nome', 'sobrenome', 'cpf']
+    list_editable = ['ativo', 'estabelecimento', 'tolerancia_minutos']
     
     fieldsets = [
         ('Dados Pessoais', {
             'fields': [
-                'usuario',
                 'nome', 
                 'sobrenome', 
                 'cpf',
-                'email',
-                'telefone',
                 'profissao'
             ]
         }),
@@ -50,34 +40,27 @@ class ProfissionalAdmin(admin.ModelAdmin):
                 'tolerancia_minutos'
             ]
         }),
-        ('Termo de Uso', {
+        ('Datas', {
             'fields': [
-                'termo_uso',
-                'termo_uso_versao',
-                'termo_uso_data',
-                'termo_uso_ip'
-            ]
+                'criado_em',
+                'atualizado_em'
+            ],
+            'classes': ('collapse',)
         }),
     ]
     
-    def get_full_name(self, obj):
-        return obj.get_full_name()
-    get_full_name.short_description = 'Nome Completo'
+    readonly_fields = ['criado_em', 'atualizado_em']
+    
+    def nome_completo(self, obj):
+        return f"{obj.nome} {obj.sobrenome}"
+    nome_completo.short_description = 'Nome Completo'
+    
+    def carga_horaria_diaria_display(self, obj):
+        return obj.get_carga_horaria_diaria_display()
+    carga_horaria_diaria_display.short_description = 'Carga Diária'
+
 
 @admin.register(AreaAtuacao)
 class AreaAtuacaoAdmin(admin.ModelAdmin):
     list_display = ['profissao']
     search_fields = ['profissao']
-
-@admin.register(LogAtividade)
-class LogAtividadeAdmin(admin.ModelAdmin):
-    list_display = ['usuario', 'acao', 'ip_address', 'data_hora']
-    list_filter = ['acao', 'data_hora']
-    search_fields = ['usuario__username', 'acao', 'detalhes']
-    readonly_fields = ['usuario', 'acao', 'detalhes', 'ip_address', 'data_hora']
-    
-    def has_add_permission(self, request):
-        return False
-    
-    def has_change_permission(self, request, obj=None):
-        return False
