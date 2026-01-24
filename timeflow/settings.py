@@ -43,14 +43,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
-    # Third party apps
     'rest_framework',
     'rest_framework_simplejwt',
-    'api',  # ✅ Novo app para API
+    'api',  
     'corsheaders',
-    
-    # Local apps
     'usuarios',
     'municipio',
     'estabelecimentos', 
@@ -73,14 +69,13 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'timeflow.urls'
 
-# settings.py (adições para a API)
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        # 'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.IsAuthenticated',
         'rest_framework.permissions.AllowAny',
     ),
     'DEFAULT_RENDERER_CLASSES': (
@@ -189,9 +184,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Configure o LOGIN_REDIRECT_URL para apontar para /bemvindo/
 
-LOGIN_REDIRECT_URL = '/'  # ✅ Para onde ir após login bem-sucedido
-LOGOUT_REDIRECT_URL = '/'  # ✅ Para onde ir após logout
-
+LOGIN_REDIRECT_URL = '/' 
+LOGOUT_REDIRECT_URL = '/' 
 # settings.py - Adicione na seção LOGGING
 # settings.py
 LOGGING = {
@@ -212,7 +206,7 @@ LOGGING = {
     'loggers': {
         'api.views': {
             'handlers': ['console'],
-            'level': 'DEBUG',  # ✅ MUDE PARA DEBUG
+            'level': 'DEBUG', 
             'propagate': True,
         },
     },

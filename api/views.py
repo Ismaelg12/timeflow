@@ -24,7 +24,6 @@ from .serializers import (
 logger = logging.getLogger(__name__)
 
 
-# ViewSet para Profissionais (apenas para usuários autenticados)
 class ProfissionalViewSet(viewsets.ReadOnlyModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -37,7 +36,6 @@ class ProfissionalViewSet(viewsets.ReadOnlyModelViewSet):
     
     @action(detail=False, methods=['get'])
     def me(self, request):
-        """Retorna dados do profissional logado"""
         try:
             if hasattr(request.user, 'profissional'):
                 profissional = request.user.profissional
@@ -48,15 +46,14 @@ class ProfissionalViewSet(viewsets.ReadOnlyModelViewSet):
                     {'error': 'Usuário não possui perfil profissional'},
                     status=status.HTTP_404_NOT_FOUND
                 )
-        except Exception as e:
-            logger.error(f"Erro ao buscar dados do profissional: {str(e)}")
+        except Exception:
+            logger.error("Erro ao buscar dados do profissional")
             return Response(
                 {'error': 'Erro ao buscar dados'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
 
-# ViewSet para Estabelecimentos
 class EstabelecimentoViewSet(viewsets.ReadOnlyModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -70,7 +67,6 @@ class EstabelecimentoViewSet(viewsets.ReadOnlyModelViewSet):
         return Estabelecimento.objects.none()
 
 
-# ViewSet para RegistroPonto
 class RegistroPontoViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -86,7 +82,6 @@ class RegistroPontoViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get'])
     def registros_hoje(self, request):
-        """Retorna os registros do dia atual"""
         try:
             if not hasattr(request.user, 'profissional'):
                 return Response(
@@ -109,8 +104,8 @@ class RegistroPontoViewSet(viewsets.ModelViewSet):
                 'data_consulta': hoje.isoformat()
             })
             
-        except Exception as e:
-            logger.error(f"Erro ao buscar registros do dia: {str(e)}")
+        except Exception:
+            logger.error("Erro ao buscar registros do dia")
             return Response(
                 {'error': 'Erro ao buscar registros'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -121,10 +116,6 @@ class RegistroPontoViewSet(viewsets.ModelViewSet):
 @permission_classes([AllowAny])
 @throttle_classes([AnonRateThrottle])
 def verificar_cpf_mobile(request):
-    """
-    Endpoint para verificar CPF e retornar dados do profissional
-    Usado pelo app mobile - usuário digita apenas CPF
-    """
     logger.info(f"Requisição verificar_cpf_mobile - Dados: {request.data}")
     
     cpf = request.data.get('cpf')
@@ -159,7 +150,7 @@ def verificar_cpf_mobile(request):
             if prof_inativo:
                 return Response({
                     'sucesso': False,
-                    'erro': f'Profissional inativo (status: {prof_inativo.ativo})'
+                    'erro': f'Profissional inativo'
                 }, status=status.HTTP_404_NOT_FOUND)
             
             return Response({
@@ -209,8 +200,8 @@ def verificar_cpf_mobile(request):
             'timestamp': timezone.now().isoformat()
         })
         
-    except Exception as e:
-        logger.error(f"Erro interno em verificar_cpf_mobile: {str(e)}")
+    except Exception:
+        logger.error("Erro interno em verificar_cpf_mobile")
         return Response({
             'sucesso': False,
             'erro': 'Erro interno no servidor'
@@ -221,10 +212,6 @@ def verificar_cpf_mobile(request):
 @permission_classes([AllowAny])
 @throttle_classes([AnonRateThrottle])
 def registrar_ponto_por_cpf(request):
-    """
-    Endpoint público para registro de ponto apenas com CPF.
-    Latitude e longitude são capturadas automaticamente pelo GPS do dispositivo.
-    """
     logger.info(f"Requisição registrar_ponto_por_cpf - Dados: {request.data}")
     
     cpf = request.data.get('cpf')
@@ -278,7 +265,7 @@ def registrar_ponto_por_cpf(request):
                 return Response(
                     {
                         'sucesso': False, 
-                        'erro': f'Profissional inativo (status: {prof_inativo.ativo})'
+                        'erro': f'Profissional inativo'
                     },
                     status=status.HTTP_404_NOT_FOUND
                 )
@@ -314,8 +301,8 @@ def registrar_ponto_por_cpf(request):
                 distancia = (lat_diff**2 + lng_diff**2)**0.5 * 111000
                 
                 return distancia <= estab.raio_permitido
-            except (TypeError, ValueError) as e:
-                logger.error(f"Erro no cálculo de distância: {e}")
+            except (TypeError, ValueError):
+                logger.error("Erro no cálculo de distância")
                 return False
         
         if not validar_localizacao(estabelecimento, latitude, longitude):
@@ -435,8 +422,8 @@ def registrar_ponto_por_cpf(request):
         
         return Response(response_data, status=status.HTTP_201_CREATED)
         
-    except ValueError as e:
-        logger.error(f"Erro de validação em registrar_ponto_por_cpf: {str(e)}")
+    except ValueError:
+        logger.error("Erro de validação em registrar_ponto_por_cpf")
         return Response(
             {'sucesso': False, 'erro': 'Erro de validação dos dados'},
             status=status.HTTP_400_BAD_REQUEST
@@ -450,8 +437,8 @@ def registrar_ponto_por_cpf(request):
             },
             status=status.HTTP_400_BAD_REQUEST
         )
-    except Exception as e:
-        logger.error(f"Erro interno em registrar_ponto_por_cpf: {str(e)}")
+    except Exception:
+        logger.error("Erro interno em registrar_ponto_por_cpf")
         return Response(
             {
                 'sucesso': False, 
@@ -465,9 +452,6 @@ def registrar_ponto_por_cpf(request):
 @permission_classes([AllowAny])
 @throttle_classes([AnonRateThrottle])
 def buscar_registros_historico(request):
-    """
-    Endpoint público para buscar histórico de registros por CPF e período
-    """
     logger.info(f"Requisição buscar_registros_historico - Parâmetros: {request.GET}")
     
     cpf = request.GET.get('cpf')
@@ -539,7 +523,7 @@ def buscar_registros_historico(request):
                 'dados': []
             })
         
-        serializer = RegistroPontoSerializer(registros, many=True)
+        serializer = RegistroPontoSerializer(registros, many=True, context={'request': request})
         
         registros_completo = RegistroPonto.objects.filter(
             profissional=profissional
@@ -562,17 +546,21 @@ def buscar_registros_historico(request):
         entradas = registros_completo.filter(tipo='ENTRADA').count()
         saidas = registros_completo.filter(tipo='SAIDA').count()
         
+        profissional_data = {
+            'id': profissional.id,
+            'nome': profissional.nome,
+            'cpf': profissional.cpf,
+            'profissao': profissional.profissao.profissao if profissional.profissao else 'Não informado',
+            'estabelecimento_nome': profissional.estabelecimento.nome if profissional.estabelecimento else None,
+            'estabelecimento_cnpj': profissional.estabelecimento.cnpj if profissional.estabelecimento else None
+        }
+        
         return Response({
             'sucesso': True,
             'total_registros': total_registros,
             'total_entradas': entradas,
             'total_saidas': saidas,
-            'profissional': {
-                'id': profissional.id,
-                'nome': profissional.nome,
-                'cpf': profissional.cpf,
-                'profissao': profissional.profissao.profissao if profissional.profissao else 'Não informado'
-            },
+            'profissional': profissional_data,
             'dados': serializer.data,
             'periodo': {
                 'data_inicio': data_inicio_str,
@@ -580,8 +568,8 @@ def buscar_registros_historico(request):
             }
         })
         
-    except Exception as e:
-        logger.error(f"Erro interno em buscar_registros_historico: {str(e)}")
+    except Exception:
+        logger.error("Erro interno em buscar_registros_historico")
         return Response({
             'sucesso': False,
             'erro': 'Erro interno no servidor'
