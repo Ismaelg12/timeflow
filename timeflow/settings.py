@@ -43,10 +43,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
+    # Third party apps
     'rest_framework',
     'rest_framework_simplejwt',
-    'api',  
+    'api', 
     'corsheaders',
+    
+    # Local apps
     'usuarios',
     'municipio',
     'estabelecimentos', 
@@ -69,6 +73,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'timeflow.urls'
 
+# settings.py (adições para a API)
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -173,7 +178,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_URL = 'static/'
 
 # Default primary key field type
@@ -185,7 +191,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Configure o LOGIN_REDIRECT_URL para apontar para /bemvindo/
 
 LOGIN_REDIRECT_URL = '/' 
-LOGOUT_REDIRECT_URL = '/' 
+LOGOUT_REDIRECT_URL = '/'  
+
 # settings.py - Adicione na seção LOGGING
 # settings.py
 LOGGING = {
@@ -206,8 +213,10 @@ LOGGING = {
     'loggers': {
         'api.views': {
             'handlers': ['console'],
-            'level': 'DEBUG', 
+            'level': 'DEBUG',  
             'propagate': True,
         },
     },
 }
+
+CORS_ALLOW_ALL_ORIGINS = True
