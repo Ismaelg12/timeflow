@@ -14,7 +14,6 @@ class AreaAtuacao(models.Model):
 class Profissional(models.Model):
     # Dados básicos
     nome = models.CharField(max_length=50)
-    sobrenome = models.CharField(max_length=50)
     cpf = models.CharField(
         'CPF',
         max_length=14,
@@ -27,7 +26,6 @@ class Profissional(models.Model):
         }
     )
     
-    # ✅ ADICIONEI O TELEFONE AQUI
     telefone = models.CharField(
         'Telefone',
         max_length=15,
@@ -65,13 +63,13 @@ class Profissional(models.Model):
     class Meta:
         verbose_name = 'Profissional'
         verbose_name_plural = 'Profissionais'
-        ordering = ['nome', 'sobrenome']
+        ordering = ['nome']
 
     def __str__(self):
-        return f"{self.nome} {self.sobrenome}"
+        return f"{self.nome}"
 
     def get_full_name(self):
-        return f"{self.nome} {self.sobrenome}"
+        return f"{self.nome}"
 
     def get_carga_horaria_diaria_display(self):
         """Retorna a carga horária diária formatada como HH:MM"""
@@ -91,7 +89,6 @@ class Profissional(models.Model):
             return f"{hours:02d}:{minutes:02d}"
         return ""
 
-    # ✅ MÉTODO PARA FORMATAR TELEFONE
     def get_telefone_formatado(self):
         """Retorna o telefone formatado"""
         if self.telefone:

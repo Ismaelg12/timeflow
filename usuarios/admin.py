@@ -13,14 +13,13 @@ class ProfissionalAdmin(admin.ModelAdmin):
         'criado_em'
     ]
     list_filter = ['ativo', 'profissao', 'estabelecimento']
-    search_fields = ['nome', 'sobrenome', 'cpf']
+    search_fields = ['nome', 'cpf']
     list_editable = ['ativo', 'estabelecimento', 'tolerancia_minutos']
     
     fieldsets = [
         ('Dados Pessoais', {
             'fields': [
                 'nome', 
-                'sobrenome', 
                 'cpf',
                 'profissao'
             ]
@@ -52,7 +51,7 @@ class ProfissionalAdmin(admin.ModelAdmin):
     readonly_fields = ['criado_em', 'atualizado_em']
     
     def nome_completo(self, obj):
-        return f"{obj.nome} {obj.sobrenome}"
+        return f"{obj.nome}"
     nome_completo.short_description = 'Nome Completo'
     
     def carga_horaria_diaria_display(self, obj):

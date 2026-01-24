@@ -91,7 +91,7 @@ class ProfissionalForm(forms.ModelForm):
     class Meta:
         model = Profissional
         fields = [
-            'nome', 'sobrenome', 'cpf', 'telefone',
+            'nome', 'cpf', 'telefone',
             'profissao', 'estabelecimento', 'carga_horaria_diaria',
             'carga_horaria_semanal', 'horario_entrada', 'horario_saida',
             'tolerancia_minutos'
@@ -101,11 +101,6 @@ class ProfissionalForm(forms.ModelForm):
                 'class': 'form-control', 
                 'placeholder': 'Nome completo',
                 'id': 'id_nome'
-            }),
-            'sobrenome': forms.TextInput(attrs={
-                'class': 'form-control', 
-                'placeholder': 'Nome social',
-                'id': 'id_sobrenome'
             }),
             'cpf': forms.TextInput(attrs={
                 'class': 'form-control', 
@@ -140,7 +135,6 @@ class ProfissionalForm(forms.ModelForm):
         
         # Melhorar os labels
         self.fields['nome'].label = 'Nome Completo'
-        self.fields['sobrenome'].label = 'Nome Social'
         self.fields['cpf'].label = 'CPF'
         self.fields['telefone'].label = 'Telefone'
         self.fields['profissao'].label = 'Profissão'
@@ -314,13 +308,6 @@ class AreaAtuacaoForm(forms.ModelForm):
             profissao = profissao.strip().title()
         return profissao
 
-# usuarios/forms.py
-from django import forms
-from .models import Profissional, AreaAtuacao
-from estabelecimentos.models import Estabelecimento
-from datetime import timedelta, datetime
-import re
-
 class ProfissionalEdicaoForm(forms.ModelForm):
     """Formulário para EDITAR profissional (sem termo_uso)"""
     
@@ -401,7 +388,7 @@ class ProfissionalEdicaoForm(forms.ModelForm):
     class Meta:
         model = Profissional
         fields = [
-            'nome', 'sobrenome', 'cpf', 'telefone',
+            'nome', 'cpf', 'telefone',
             'profissao', 'estabelecimento', 'carga_horaria_diaria',
             'carga_horaria_semanal', 'horario_entrada', 'horario_saida',
             'tolerancia_minutos'
@@ -412,11 +399,6 @@ class ProfissionalEdicaoForm(forms.ModelForm):
                 'class': 'form-control', 
                 'placeholder': 'Nome completo',
                 'id': 'id_nome'
-            }),
-            'sobrenome': forms.TextInput(attrs={
-                'class': 'form-control', 
-                'placeholder': 'Nome social',
-                'id': 'id_sobrenome'
             }),
             'cpf': forms.TextInput(attrs={
                 'class': 'form-control', 

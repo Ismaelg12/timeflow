@@ -69,7 +69,7 @@
                 <h1 class="h3 mb-1 text-primary">
                     <i class="fas fa-user-edit me-2"></i>Editar Profissional
                 </h1>
-                <p class="text-muted mb-0">Atualize os dados de {{ profissional.nome }} {{ profissional.sobrenome }}</p>
+                <p class="text-muted mb-0">Atualize os dados de {{ profissional.nome }}</p>
             </div>
             <a href="{% url 'usuarios:listar_profissionais' %}" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left me-2"></i>Voltar
@@ -131,20 +131,7 @@
                                     </div>
                                 {% endif %}
                             </div>
-                            
-                            <!-- Sobrenome -->
-                            <div class="col-md-4 mb-3">
-                                <label for="{{ form.sobrenome.id_for_label }}" class="form-label required-field">
-                                    Sobrenome
-                                </label>
-                                {{ form.sobrenome }}
-                                {% if form.sobrenome.errors %}
-                                    <div class="text-danger small mt-1">
-                                        {{ form.sobrenome.errors }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                            
+                                                
                             <!-- CPF -->
                             <div class="col-md-4 mb-3">
                                 <label for="{{ form.cpf.id_for_label }}" class="form-label required-field">
@@ -359,7 +346,6 @@
                 // Verificar campos obrigatórios
                 const camposObrigatorios = [
                     { id: 'id_nome', nome: 'Nome' },
-                    { id: 'id_sobrenome', nome: 'Sobrenome' },
                     { id: 'id_cpf', nome: 'CPF' },
                     { id: 'id_telefone', nome: 'Telefone' },
                     { id: 'id_profissao', nome: 'Profissão' },

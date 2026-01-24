@@ -1,24 +1,30 @@
 # api/views.py
+import logging
+from datetime import datetime, date, time as time_type
+
+from django.db import IntegrityError
+from django.db.models import Q
+from django.utils import timezone
+import pytz
 from rest_framework import viewsets, status
 from rest_framework.decorators import api_view, permission_classes, throttle_classes, action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from django.utils import timezone
-from datetime import datetime, date, time as time_type
-from django.db import IntegrityError
-import pytz
 
-from usuarios.models import Profissional
-from ponto.models import RegistroPonto
 from estabelecimentos.models import Estabelecimento
+from ponto.models import RegistroPonto
+from usuarios.models import Profissional
 from .serializers import (
     ProfissionalSerializer, EstabelecimentoSerializer,
     RegistroPontoSerializer, RegistroPontoCreateSerializer
 )
 
-# ✅ ViewSet para Profissionais (apenas para usuários autenticados)
+logger = logging.getLogger(__name__)
+
+
+# ViewSet para Profissionais (apenas para usuários autenticados)
 class ProfissionalViewSet(viewsets.ReadOnlyModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -43,12 +49,14 @@ class ProfissionalViewSet(viewsets.ReadOnlyModelViewSet):
                     status=status.HTTP_404_NOT_FOUND
                 )
         except Exception as e:
+            logger.error(f"Erro ao buscar dados do profissional: {str(e)}")
             return Response(
-                {'error': f'Erro ao buscar dados: {str(e)}'},
+                {'error': 'Erro ao buscar dados'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-# ✅ ViewSet para Estabelecimentos
+
+# ViewSet para Estabelecimentos
 class EstabelecimentoViewSet(viewsets.ReadOnlyModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -61,7 +69,8 @@ class EstabelecimentoViewSet(viewsets.ReadOnlyModelViewSet):
                 return Estabelecimento.objects.filter(id=profissional.estabelecimento.id)
         return Estabelecimento.objects.none()
 
-# ✅ ViewSet para RegistroPonto
+
+# ViewSet para RegistroPonto
 class RegistroPontoViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -101,17 +110,12 @@ class RegistroPontoViewSet(viewsets.ModelViewSet):
             })
             
         except Exception as e:
+            logger.error(f"Erro ao buscar registros do dia: {str(e)}")
             return Response(
-                {'error': f'Erro ao buscar registros: {str(e)}'},
+                {'error': 'Erro ao buscar registros'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-
-# ✅ ADICIONE ESTES IMPORTS NO TOPO DO ARQUIVO views.py
-import logging
-logger = logging.getLogger(__name__)
-
-from django.db.models import Q  # ✅ ADICIONE ESTE IMPORT
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -121,64 +125,38 @@ def verificar_cpf_mobile(request):
     Endpoint para verificar CPF e retornar dados do profissional
     Usado pelo app mobile - usuário digita apenas CPF
     """
-    # ✅ LOG 1: Request completa
-    logger.info("=" * 50)
-    logger.info("📱 NOVA REQUISIÇÃO verificar_cpf_mobile")
-    logger.info(f"📦 Dados recebidos: {request.data}")
+    logger.info(f"Requisição verificar_cpf_mobile - Dados: {request.data}")
     
     cpf = request.data.get('cpf')
     
-    # ✅ LOG 2: CPF recebido
-    logger.info(f"📋 CPF recebido na request (raw): '{cpf}'")
-    
     if not cpf:
-        logger.error("❌ ERRO: CPF não fornecido na requisição")
         return Response(
             {'sucesso': False, 'erro': 'CPF é obrigatório'},
             status=status.HTTP_400_BAD_REQUEST
         )
     
-    # ✅ Limpar e validar CPF
-    cpf_original = cpf
     cpf = ''.join(filter(str.isdigit, cpf))
     
-    # ✅ LOG 3: CPF após limpeza
-    logger.info(f"🧹 CPF após limpeza: '{cpf}'")
-    logger.info(f"📏 Tamanho do CPF limpo: {len(cpf)} dígitos")
-    
     if len(cpf) != 11:
-        logger.error(f"❌ ERRO: CPF inválido. Tem {len(cpf)} dígitos, precisa ter 11")
         return Response(
             {'sucesso': False, 'erro': 'CPF inválido. Deve conter 11 dígitos'},
             status=status.HTTP_400_BAD_REQUEST
         )
     
     try:
-        # ✅✅✅ CORREÇÃO AQUI: Criar a versão formatada do CPF
         cpf_formatado = f"{cpf[:3]}.{cpf[3:6]}.{cpf[6:9]}-{cpf[9:]}"
-        logger.info(f"🎯 CPF formatado para busca: '{cpf_formatado}'")
         
-        # ✅ LOG 4: Tentando buscar no banco com AMBAS as versões
-        logger.info(f"🔍 Buscando profissional com:")
-        logger.info(f"   1. CPF='{cpf}' (sem formatação) E ativo=True")
-        logger.info(f"   2. CPF='{cpf_formatado}' (com formatação) E ativo=True")
-        
-        # ✅✅✅ BUSCA CORRIGIDA: Procurar por AMBAS as formatações
         profissional = Profissional.objects.filter(
-            Q(cpf=cpf) | Q(cpf=cpf_formatado),  # ✅ Busca por AMBOS os formatos
+            Q(cpf=cpf) | Q(cpf=cpf_formatado),
             ativo=True
-        ).first()  # ✅ Usar .first() em vez de .get()
+        ).first()
         
         if not profissional:
-            logger.error(f"❌ Nenhum profissional encontrado com CPF '{cpf}' ou '{cpf_formatado}' e ativo=True")
-            
-            # Verificar se existe mas está inativo
             prof_inativo = Profissional.objects.filter(
                 Q(cpf=cpf) | Q(cpf=cpf_formatado)
             ).first()
             
             if prof_inativo:
-                logger.error(f"   ⚠️ Profissional EXISTE mas ativo={prof_inativo.ativo}")
                 return Response({
                     'sucesso': False,
                     'erro': f'Profissional inativo (status: {prof_inativo.ativo})'
@@ -189,51 +167,31 @@ def verificar_cpf_mobile(request):
                 'erro': 'CPF não encontrado ou profissional inativo'
             }, status=status.HTTP_404_NOT_FOUND)
         
-        # ✅ LOG 5: Profissional encontrado
-        logger.info(f"✅ PROFISSIONAL ENCONTRADO!")
-        logger.info(f"   ID: {profissional.id}")
-        logger.info(f"   Nome: {profissional.nome} {profissional.sobrenome}")
-        logger.info(f"   CPF no banco: '{profissional.cpf}'")  # Vai mostrar '000.689.053-94'
-        logger.info(f"   Ativo: {profissional.ativo}")
-        
-        # Verificar se tem estabelecimento
         if not profissional.estabelecimento:
-            logger.error("❌ ERRO: Profissional não tem estabelecimento vinculado")
             return Response({
                 'sucesso': False,
                 'erro': 'Profissional não vinculado a um estabelecimento'
-            })
+            }, status=status.HTTP_404_NOT_FOUND)
         
-        # Determinar próximo tipo de registro
         hoje = timezone.now().date()
         estabelecimento = profissional.estabelecimento
         
-        # Importar funções utilitárias
         from ponto.utils import determinar_proximo_tipo
         proximo_tipo = determinar_proximo_tipo(profissional, estabelecimento, hoje)
         
-        # Verificar se já bateu o ponto hoje
         registros_hoje = RegistroPonto.objects.filter(
             profissional=profissional,
             data=hoje
         ).count()
         
-        # ✅ LOG 6: Dados completos para resposta
-        logger.info(f"🏢 Estabelecimento: {estabelecimento.nome}")
-        logger.info(f"📅 Data atual: {hoje}")
-        logger.info(f"🎯 Próximo tipo: {proximo_tipo}")
-        logger.info(f"📊 Registros hoje: {registros_hoje}")
-        logger.info("=" * 50)
-        
-        # Preparar resposta
         return Response({
             'sucesso': True,
             'mensagem': 'Profissional encontrado',
             'dados': {
                 'profissional_id': profissional.id,
-                'nome_completo': f"{profissional.nome} {profissional.sobrenome}",
-                'cpf': profissional.cpf,  # Vai retornar '000.689.053-94'
-                'cpf_limpo': cpf,  # Adiciona também a versão sem formatação
+                'nome_completo': f"{profissional.nome}",
+                'cpf': profissional.cpf,
+                'cpf_limpo': cpf,
                 'profissao': profissional.profissao.profissao if profissional.profissao else 'Não informado',
                 'estabelecimento_id': estabelecimento.id,
                 'estabelecimento_nome': estabelecimento.nome,
@@ -252,19 +210,12 @@ def verificar_cpf_mobile(request):
         })
         
     except Exception as e:
-        logger.error(f"💥 ERRO INTERNO: {str(e)}")
-        logger.error(f"   Tipo do erro: {type(e)}")
-        import traceback
-        logger.error(f"   Traceback: {traceback.format_exc()}")
-        logger.error("=" * 50)
-        
+        logger.error(f"Erro interno em verificar_cpf_mobile: {str(e)}")
         return Response({
             'sucesso': False,
-            'erro': f'Erro interno: {str(e)}'
+            'erro': 'Erro interno no servidor'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-# ✅ ADICIONE ESTE IMPORT NO TOPO DO ARQUIVO (views.py)
-from django.db.models import Q
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -274,155 +225,83 @@ def registrar_ponto_por_cpf(request):
     Endpoint público para registro de ponto apenas com CPF.
     Latitude e longitude são capturadas automaticamente pelo GPS do dispositivo.
     """
-    # ✅ LOG 1: Request completa
-    logger.info("=" * 70)
-    logger.info("📍🔥 NOVA REQUISIÇÃO registrar_ponto_por_cpf 🔥📍")
-    logger.info(f"📦 Dados recebidos: {request.data}")
-    logger.info(f"🔧 Método: {request.method}")
-    logger.info(f"🌐 Path: {request.path}")
+    logger.info(f"Requisição registrar_ponto_por_cpf - Dados: {request.data}")
     
-    # Dados da requisição
     cpf = request.data.get('cpf')
     latitude = request.data.get('latitude')
     longitude = request.data.get('longitude')
     
-    # Validações básicas
     if not cpf:
-        logger.error("❌ ERRO: CPF não fornecido")
         return Response(
             {'sucesso': False, 'erro': 'CPF é obrigatório'},
             status=status.HTTP_400_BAD_REQUEST
         )
     
     if not latitude or not longitude:
-        logger.error("❌ ERRO: Latitude ou longitude não fornecidas")
         return Response(
             {'sucesso': False, 'erro': 'Localização não capturada. Ative o GPS.'},
             status=status.HTTP_400_BAD_REQUEST
         )
     
-    # ✅ Validação de horário comercial (proteção)
     tz_brasilia = pytz.timezone('America/Sao_Paulo')
     agora = timezone.now().astimezone(tz_brasilia)
     hora_atual = agora.time()
     
-    # ✅ LOG 2: Horário atual
-    logger.info(f"🕒 Horário atual: {hora_atual}")
-    logger.info(f"📅 Data atual: {agora.date()}")
-    
-    # Permitir registro das 5h às 23h
     if hora_atual < time_type(5, 0) or hora_atual > time_type(23, 0):
-        logger.error(f"❌ ERRO: Horário fora do permitido: {hora_atual}")
         return Response(
             {'sucesso': False, 'erro': 'Registro fora do horário permitido (05:00 - 23:00)'},
             status=status.HTTP_400_BAD_REQUEST
         )
     
-    # ✅ Limpar e validar CPF
-    cpf_original = cpf
     cpf_limpo = ''.join(filter(str.isdigit, str(cpf)))
     
-    # ✅ LOG 3: CPF processado
-    logger.info(f"🔢 CPF original: '{cpf_original}'")
-    logger.info(f"🧹 CPF limpo: '{cpf_limpo}'")
-    logger.info(f"📏 Tamanho CPF limpo: {len(cpf_limpo)} dígitos")
-    
     if len(cpf_limpo) != 11:
-        logger.error(f"❌ ERRO: CPF inválido, tamanho: {len(cpf_limpo)}")
         return Response(
             {'sucesso': False, 'erro': 'CPF inválido. Deve conter 11 dígitos'},
             status=status.HTTP_400_BAD_REQUEST
         )
     
     try:
-        # ✅✅✅ CORREÇÃO CRÍTICA: Buscar profissional com formatação flexível
-        
-        # Gerar versão formatada do CPF (000.689.053-94)
         cpf_formatado = f"{cpf_limpo[:3]}.{cpf_limpo[3:6]}.{cpf_limpo[6:9]}-{cpf_limpo[9:]}"
-        logger.info(f"🎯 Buscando profissional com:")
-        logger.info(f"   1. CPF limpo: '{cpf_limpo}'")
-        logger.info(f"   2. CPF formatado: '{cpf_formatado}'")
         
-        # ✅ BUSCA FLEXÍVEL: Procurar por AMBAS as formatações
         profissional = Profissional.objects.filter(
-            Q(cpf=cpf_limpo) | Q(cpf=cpf_formatado),  # ✅ Busca por AMBOS os formatos
+            Q(cpf=cpf_limpo) | Q(cpf=cpf_formatado),
             ativo=True
-        ).first()  # ✅ Usar .first() em vez de .get()
+        ).first()
         
         if not profissional:
-            logger.error(f"❌ Nenhum profissional encontrado com CPF '{cpf_limpo}' ou '{cpf_formatado}' e ativo=True")
-            
-            # Verificar se existe mas está inativo (para debug)
             prof_inativo = Profissional.objects.filter(
                 Q(cpf=cpf_limpo) | Q(cpf=cpf_formatado)
             ).first()
             
             if prof_inativo:
-                logger.error(f"   ⚠️ Profissional EXISTE mas ativo={prof_inativo.ativo}")
-                logger.error(f"   📊 Detalhes: ID={prof_inativo.id}, Nome={prof_inativo.nome}")
                 return Response(
                     {
                         'sucesso': False, 
-                        'erro': f'Profissional inativo (status: {prof_inativo.ativo})',
-                        'debug_info': {
-                            'cpf_buscado': cpf_limpo,
-                            'cpf_formatado_buscado': cpf_formatado,
-                            'cpf_no_banco': prof_inativo.cpf,
-                            'profissional_id': prof_inativo.id,
-                            'nome': prof_inativo.nome
-                        }
+                        'erro': f'Profissional inativo (status: {prof_inativo.ativo})'
                     },
                     status=status.HTTP_404_NOT_FOUND
                 )
             
-            # Listar TODOS os profissionais para debug
-            logger.error(f"   📋 Listando TODOS os profissionais no banco:")
-            todos = Profissional.objects.all()
-            for p in todos:
-                logger.error(f"      ID:{p.id} | CPF:'{p.cpf}' | Nome:{p.nome} | Ativo:{p.ativo}")
-            
             return Response(
                 {
                     'sucesso': False, 
-                    'erro': 'CPF não encontrado ou profissional inativo',
-                    'debug_info': {
-                        'cpf_buscado': cpf_limpo,
-                        'cpf_formatado_buscado': cpf_formatado,
-                        'sugestao': 'Verifique logs do servidor para mais detalhes'
-                    }
+                    'erro': 'CPF não encontrado ou profissional inativo'
                 },
                 status=status.HTTP_404_NOT_FOUND
             )
         
-        # ✅ LOG 5: Profissional encontrado
-        logger.info(f"✅✅ PROFISSIONAL ENCONTRADO! ✅✅")
-        logger.info(f"   📊 ID: {profissional.id}")
-        logger.info(f"   👤 Nome: {profissional.nome} {profissional.sobrenome}")
-        logger.info(f"   🔢 CPF no banco: '{profissional.cpf}'")  # Vai mostrar '000.689.053-94'
-        logger.info(f"   ✅ Ativo: {profissional.ativo}")
-        logger.info(f"   📌 Formato encontrado: {'Formatado' if '.' in str(profissional.cpf) else 'Sem formatação'}")
-        
         if not profissional.estabelecimento:
-            logger.error("❌ ERRO: Profissional sem estabelecimento vinculado")
             return Response(
                 {
                     'sucesso': False, 
-                    'erro': 'Profissional sem estabelecimento vinculado',
-                    'profissional': {
-                        'id': profissional.id,
-                        'nome': profissional.get_full_name()
-                    }
+                    'erro': 'Profissional sem estabelecimento vinculado'
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
         
         estabelecimento = profissional.estabelecimento
-        logger.info(f"🏢 Estabelecimento: {estabelecimento.nome} (ID: {estabelecimento.id})")
-        logger.info(f"📍 Endereço: {estabelecimento.endereco}")
-        logger.info(f"📡 Coordenadas: {estabelecimento.latitude}, {estabelecimento.longitude}")
-        logger.info(f"🎯 Raio permitido: {estabelecimento.raio_permitido}m")
         
-        # ✅ Validar localização
         def validar_localizacao(estab, lat, lng):
             try:
                 lat_estab = float(estab.latitude)
@@ -432,95 +311,49 @@ def registrar_ponto_por_cpf(request):
                 
                 lat_diff = lat_estab - lat_req
                 lng_diff = lng_estab - lng_req
-                distancia = (lat_diff**2 + lng_diff**2)**0.5 * 111000  # metros
-                
-                logger.info(f"📍 Cálculo distância:")
-                logger.info(f"   Estabelecimento: {lat_estab}, {lng_estab}")
-                logger.info(f"   Dispositivo: {lat_req}, {lng_req}")
-                logger.info(f"   Diferenças: lat_diff={lat_diff:.6f}, lng_diff={lng_diff:.6f}")
-                logger.info(f"   Distância calculada: {distancia:.2f}m")
-                logger.info(f"   Raio permitido: {estab.raio_permitido}m")
-                logger.info(f"   Dentro do raio? {distancia <= estab.raio_permitido}")
+                distancia = (lat_diff**2 + lng_diff**2)**0.5 * 111000
                 
                 return distancia <= estab.raio_permitido
             except (TypeError, ValueError) as e:
-                logger.error(f"❌ ERRO no cálculo de distância: {e}")
-                logger.error(f"   Tipo latitude: {type(lat)}, valor: '{lat}'")
-                logger.error(f"   Tipo longitude: {type(lng)}, valor: '{lng}'")
+                logger.error(f"Erro no cálculo de distância: {e}")
                 return False
         
         if not validar_localizacao(estabelecimento, latitude, longitude):
-            logger.error(f"❌ ERRO: Localização fora do raio permitido")
             return Response(
                 {
                     'sucesso': False, 
-                    'erro': f'Fora do raio permitido. Máximo: {estabelecimento.raio_permitido}m',
-                    'estabelecimento': {
-                        'nome': estabelecimento.nome,
-                        'endereco': estabelecimento.endereco,
-                        'latitude': estabelecimento.latitude,
-                        'longitude': estabelecimento.longitude,
-                        'raio_permitido': estabelecimento.raio_permitido
-                    },
-                    'localizacao_dispositivo': {
-                        'latitude': latitude,
-                        'longitude': longitude
-                    }
+                    'erro': f'Fora do raio permitido. Máximo: {estabelecimento.raio_permitido}m'
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Determinar tipo de registro
         hoje = agora.date()
         horario_atual = agora.time()
-        logger.info(f"📅 Data do registro: {hoje}")
-        logger.info(f"🕒 Horário do registro: {horario_atual}")
         
-        # ✅ Importar funções utilitárias
-        try:
-            from ponto.utils import determinar_proximo_tipo, verificar_registro_duplicado, calcular_tolerancia
+        from ponto.utils import determinar_proximo_tipo, verificar_registro_duplicado, calcular_tolerancia
+        
+        tipo = determinar_proximo_tipo(profissional, estabelecimento, hoje)
+        
+        if verificar_registro_duplicado(profissional, estabelecimento, hoje, tipo):
+            tipo_oposto = 'SAIDA' if tipo == 'ENTRADA' else 'ENTRADA'
             
-            # ✅ Determinar próximo tipo
-            tipo = determinar_proximo_tipo(profissional, estabelecimento, hoje)
-            logger.info(f"🎯 Tipo de registro determinado: {tipo}")
+            registros_hoje = RegistroPonto.objects.filter(
+                profissional=profissional,
+                data=hoje
+            ).order_by('horario')
             
-            # ✅ Verificar se já existe registro do mesmo tipo
-            if verificar_registro_duplicado(profissional, estabelecimento, hoje, tipo):
-                tipo_oposto = 'SAIDA' if tipo == 'ENTRADA' else 'ENTRADA'
-                logger.error(f"❌ ERRO: Registro duplicado do tipo {tipo}")
-                
-                # Buscar registros do dia para mostrar
-                registros_hoje = RegistroPonto.objects.filter(
-                    profissional=profissional,
-                    data=hoje
-                ).order_by('horario')
-                
-                return Response(
-                    {
-                        'sucesso': False, 
-                        'erro': f'Já registrou {tipo.lower()} hoje. Próximo: {tipo_oposto.lower()}',
-                        'registros_hoje': RegistroPontoSerializer(registros_hoje, many=True).data if registros_hoje.exists() else [],
-                        'total_registros': registros_hoje.count()
-                    },
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
-            # ✅ Calcular tolerâncias e atrasos
-            atraso_minutos, dentro_tolerancia = calcular_tolerancia(
-                profissional, horario_atual, tipo
+            return Response(
+                {
+                    'sucesso': False, 
+                    'erro': f'Já registrou {tipo.lower()} hoje. Próximo: {tipo_oposto.lower()}'
+                },
+                status=status.HTTP_400_BAD_REQUEST
             )
-            logger.info(f"⏰ Atraso/antecipação: {atraso_minutos}min")
-            logger.info(f"✅ Dentro da tolerância? {dentro_tolerancia}")
-            
-        except ImportError as e:
-            logger.error(f"❌ ERRO: Não foi possível importar funções utilitárias: {e}")
-            # Valores padrão se não conseguir importar
-            tipo = 'ENTRADA'  # Valor padrão
-            atraso_minutos = 0
-            dentro_tolerancia = True
-            logger.warning(f"⚠️ Usando valores padrão: tipo={tipo}, atraso={atraso_minutos}min")
         
-        # ✅ Criar registro
+        atraso_minutos, dentro_tolerancia = calcular_tolerancia(
+            profissional, horario_atual, tipo
+        )
+        
         registro = RegistroPonto(
             profissional=profissional,
             estabelecimento=estabelecimento,
@@ -534,16 +367,8 @@ def registrar_ponto_por_cpf(request):
             dentro_tolerancia=dentro_tolerancia
         )
         
-        # Salvar
         registro.save()
-        logger.info(f"💾 Registro salvo com ID: {registro.id}")
-        logger.info(f"📝 Detalhes do registro:")
-        logger.info(f"   Tipo: {tipo}")
-        logger.info(f"   Data: {hoje}")
-        logger.info(f"   Horário: {horario_atual}")
-        logger.info(f"   Localização: {latitude}, {longitude}")
         
-        # ✅ Mensagem de sucesso
         tipo_formatado = 'ENTRADA' if tipo == 'ENTRADA' else 'SAÍDA'
         horario_formatado = horario_atual.strftime('%H:%M')
         
@@ -558,22 +383,15 @@ def registrar_ponto_por_cpf(request):
                 mensagem = f'Saída registrada às {horario_formatado} ({atraso_minutos}min antecipada)'
                 status_registro = 'warning'
         
-        # Adicionar informação do próximo registro
         proximo_tipo = 'SAÍDA' if tipo == 'ENTRADA' else 'ENTRADA'
         mensagem_completa = f'{mensagem} | Próximo: {proximo_tipo}'
         
-        # Buscar registros do dia para resposta
         registros_hoje = RegistroPonto.objects.filter(
             profissional=profissional,
             data=hoje
         ).order_by('horario')
         
         serializer = RegistroPontoSerializer(registros_hoje, many=True)
-        
-        logger.info(f"✅ Registro concluído com sucesso!")
-        logger.info(f"📤 Mensagem: {mensagem_completa}")
-        logger.info(f"📊 Total de registros hoje: {registros_hoje.count()}")
-        logger.info("=" * 70)
         
         response_data = {
             'sucesso': True,
@@ -596,7 +414,7 @@ def registrar_ponto_por_cpf(request):
                 'id': profissional.id,
                 'nome': profissional.get_full_name(),
                 'cpf': profissional.cpf,
-                'cpf_limpo': cpf_limpo,  # Adiciona versão sem formatação
+                'cpf_limpo': cpf_limpo,
                 'profissao': profissional.profissao.profissao if profissional.profissao else 'Não informado'
             },
             'estabelecimento': {
@@ -618,41 +436,153 @@ def registrar_ponto_por_cpf(request):
         return Response(response_data, status=status.HTTP_201_CREATED)
         
     except ValueError as e:
-        logger.error(f"❌ ERRO de validação: {str(e)}")
-        import traceback
-        logger.error(f"   Traceback: {traceback.format_exc()}")
-        logger.error("=" * 70)
-        
+        logger.error(f"Erro de validação em registrar_ponto_por_cpf: {str(e)}")
         return Response(
-            {'sucesso': False, 'erro': f'Erro de validação: {str(e)}'},
+            {'sucesso': False, 'erro': 'Erro de validação dos dados'},
             status=status.HTTP_400_BAD_REQUEST
         )
-    except IntegrityError as e:
-        logger.error(f"❌ ERRO: Registro duplicado (IntegrityError): {e}")
-        logger.error("   Provavelmente já existe um registro com os mesmos dados")
-        logger.error("=" * 70)
-        
+    except IntegrityError:
+        logger.error("Erro de integridade: Registro duplicado")
         return Response(
             {
                 'sucesso': False, 
-                'erro': 'Registro duplicado. Já bateu ponto agora.',
-                'debug_info': str(e)
+                'erro': 'Registro duplicado. Já bateu ponto agora.'
             },
             status=status.HTTP_400_BAD_REQUEST
         )
     except Exception as e:
-        logger.error(f"💥 ERRO INTERNO INESPERADO: {str(e)}")
-        logger.error(f"   📌 Tipo do erro: {type(e)}")
-        import traceback
-        logger.error(f"   📝 Traceback completo:")
-        logger.error(traceback.format_exc())
-        logger.error("=" * 70)
-        
+        logger.error(f"Erro interno em registrar_ponto_por_cpf: {str(e)}")
         return Response(
             {
                 'sucesso': False, 
-                'erro': f'Erro interno: {str(e)}',
-                'debug_trace': traceback.format_exc()
+                'erro': 'Erro interno no servidor'
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+@throttle_classes([AnonRateThrottle])
+def buscar_registros_historico(request):
+    """
+    Endpoint público para buscar histórico de registros por CPF e período
+    """
+    logger.info(f"Requisição buscar_registros_historico - Parâmetros: {request.GET}")
+    
+    cpf = request.GET.get('cpf')
+    data_inicio_str = request.GET.get('data_inicio')
+    data_fim_str = request.GET.get('data_fim')
+    
+    if not cpf:
+        return Response({
+            'sucesso': False,
+            'erro': 'CPF é obrigatório'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    cpf_limpo = ''.join(filter(str.isdigit, str(cpf)))
+    
+    if len(cpf_limpo) != 11:
+        return Response({
+            'sucesso': False,
+            'erro': 'CPF inválido. Deve conter 11 dígitos'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        cpf_formatado = f"{cpf_limpo[:3]}.{cpf_limpo[3:6]}.{cpf_limpo[6:9]}-{cpf_limpo[9:]}"
+        
+        profissional = Profissional.objects.filter(
+            Q(cpf=cpf_limpo) | Q(cpf=cpf_formatado),
+            ativo=True
+        ).first()
+        
+        if not profissional:
+            return Response({
+                'sucesso': False,
+                'erro': 'Profissional não encontrado ou inativo'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        registros = RegistroPonto.objects.filter(
+            profissional=profissional
+        ).order_by('-data', '-horario')
+        
+        if data_inicio_str:
+            try:
+                data_inicio = datetime.strptime(data_inicio_str, '%Y-%m-%d').date()
+                registros = registros.filter(data__gte=data_inicio)
+            except ValueError:
+                return Response({
+                    'sucesso': False,
+                    'erro': 'Formato de data_inicio inválido. Use YYYY-MM-DD'
+                }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if data_fim_str:
+            try:
+                data_fim = datetime.strptime(data_fim_str, '%Y-%m-%d').date()
+                registros = registros.filter(data__lte=data_fim)
+            except ValueError:
+                return Response({
+                    'sucesso': False,
+                    'erro': 'Formato de data_fim inválido. Use YYYY-MM-DD'
+                }, status=status.HTTP_400_BAD_REQUEST)
+        
+        total_registros = registros.count()
+        
+        if total_registros > 500:
+            registros = registros[:500]
+        
+        if total_registros == 0:
+            return Response({
+                'sucesso': True,
+                'total_registros': 0,
+                'mensagem': 'Nenhum registro encontrado para o período selecionado',
+                'dados': []
+            })
+        
+        serializer = RegistroPontoSerializer(registros, many=True)
+        
+        registros_completo = RegistroPonto.objects.filter(
+            profissional=profissional
+        )
+        
+        if data_inicio_str:
+            try:
+                data_inicio = datetime.strptime(data_inicio_str, '%Y-%m-%d').date()
+                registros_completo = registros_completo.filter(data__gte=data_inicio)
+            except ValueError:
+                pass
+        
+        if data_fim_str:
+            try:
+                data_fim = datetime.strptime(data_fim_str, '%Y-%m-%d').date()
+                registros_completo = registros_completo.filter(data__lte=data_fim)
+            except ValueError:
+                pass
+        
+        entradas = registros_completo.filter(tipo='ENTRADA').count()
+        saidas = registros_completo.filter(tipo='SAIDA').count()
+        
+        return Response({
+            'sucesso': True,
+            'total_registros': total_registros,
+            'total_entradas': entradas,
+            'total_saidas': saidas,
+            'profissional': {
+                'id': profissional.id,
+                'nome': profissional.nome,
+                'cpf': profissional.cpf,
+                'profissao': profissional.profissao.profissao if profissional.profissao else 'Não informado'
+            },
+            'dados': serializer.data,
+            'periodo': {
+                'data_inicio': data_inicio_str,
+                'data_fim': data_fim_str
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Erro interno em buscar_registros_historico: {str(e)}")
+        return Response({
+            'sucesso': False,
+            'erro': 'Erro interno no servidor'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

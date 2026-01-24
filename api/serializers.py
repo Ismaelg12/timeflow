@@ -13,14 +13,14 @@ class ProfissionalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profissional
         fields = [
-            'id', 'nome', 'sobrenome', 'nome_completo', 'email', 'cpf', 
+            'id', 'nome', 'nome_completo', 'email', 'cpf', 
             'profissao', 'profissao_nome', 'estabelecimento', 
             'estabelecimento_nome', 'horario_entrada', 'horario_saida',
             'tolerancia_minutos', 'ativo'
         ]
     
     def get_nome_completo(self, obj):
-        return f"{obj.nome} {obj.sobrenome}"
+        return f"{obj.nome}"
 
 # ✅ Serializer para Estabelecimento
 class EstabelecimentoSerializer(serializers.ModelSerializer):

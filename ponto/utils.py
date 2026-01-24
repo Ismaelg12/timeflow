@@ -94,12 +94,6 @@ def determinar_proximo_tipo(profissional, estabelecimento, data):
     entradas_count = registros_hoje.filter(tipo='ENTRADA').count()
     saidas_count = registros_hoje.filter(tipo='SAIDA').count()
     
-    print(f"🔍 DEBUG: Entradas: {entradas_count}, Saídas: {saidas_count}")
-    
-    # ✅ LÓGICA CORRIGIDA:
-    # - Se não tem nenhum registro: PRÓXIMO = ENTRADA
-    # - Se tem mais entradas que saídas: PRÓXIMO = SAÍDA  
-    # - Se tem igual número: PRÓXIMO = ENTRADA
     if entradas_count == 0 and saidas_count == 0:
         return 'ENTRADA'
     elif entradas_count > saidas_count:

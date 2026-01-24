@@ -1,29 +1,34 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models import Count, Q
-from django.utils import timezone
+# core/views.py
+import logging
+from collections import defaultdict
+from datetime import datetime, date, timedelta
+
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import HttpResponse
+from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
-from datetime import timedelta, datetime, date
+from django.utils import timezone
 from weasyprint import HTML
 
-from usuarios.models import Profissional
 from estabelecimentos.models import Estabelecimento
 from municipio.models import Municipio
 from ponto.models import RegistroPonto
-from collections import defaultdict
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from usuarios.models import Profissional
 
-
+logger = logging.getLogger(__name__)
 
 
 def is_admin(user):
+    """Verifica se o usuário é admin"""
     return user.is_superuser or user.is_staff
+
 
 def registrar_log(usuario, acao, detalhes='', request=None):
     """Função placeholder para logs - pode ser implementada posteriormente"""
     pass
+
 
 @login_required
 def dashboard(request):
@@ -31,33 +36,25 @@ def dashboard(request):
     Painel administrativo principal - APENAS para superusers
     Se usuário comum tentar acessar, redireciona para seus relatórios pessoais
     """
-    # ✅ VERIFICAÇÃO DE TIPO DE USUÁRIO - CORREÇÃO CRÍTICA
     if not request.user.is_superuser and not request.user.is_staff:
         try:
-            # Redireciona usuários comuns para seus relatórios pessoais
             profissional = Profissional.objects.get(usuario=request.user)
             return redirect('core:relatorio_profissional', profissional_id=profissional.id)
         except Profissional.DoesNotExist:
-            # Se não tem perfil profissional, vai para login
             messages.error(request, "Perfil não encontrado.")
-            return redirect('usuarios:login')  # ✅ CORREÇÃO: Vai para a URL de login correta
+            return redirect('usuarios:login')
     
-    # ✅ APENAS SUPERUSERS CHEGAM AQUI
-    # Estatísticas gerais
     total_profissionais = Profissional.objects.filter(ativo=True).count()
     total_estabelecimentos = Estabelecimento.objects.count()
     total_municipios = Municipio.objects.count()
     
-    # Registros de hoje
     hoje = timezone.now().date()
     registros_hoje = RegistroPonto.objects.filter(data=hoje).count()
     entradas_hoje = RegistroPonto.objects.filter(data=hoje, tipo='ENTRADA').count()
     saidas_hoje = RegistroPonto.objects.filter(data=hoje, tipo='SAIDA').count()
     
-    # Calcular horas trabalhadas hoje
     horas_hoje = calcular_horas_trabalhadas_periodo(hoje, hoje)
     
-    # Últimos registros
     ultimos_registros = RegistroPonto.objects.select_related(
         'profissional', 'estabelecimento'
     ).order_by('-data', '-horario')[:10]
@@ -74,6 +71,7 @@ def dashboard(request):
     }
     return render(request, 'core/dashboard.html', context)
 
+
 def calcular_horas_trabalhadas_periodo(data_inicio, data_fim, profissional=None):
     """Calcula horas trabalhadas no período"""
     filtros = Q(data__gte=data_inicio, data__lte=data_fim)
@@ -82,7 +80,6 @@ def calcular_horas_trabalhadas_periodo(data_inicio, data_fim, profissional=None)
     
     registros = RegistroPonto.objects.filter(filtros).order_by('data', 'horario')
     
-    # Agrupar por dia e calcular horas trabalhadas
     horas_por_dia = {}
     dia_atual = None
     entrada_atual = None
@@ -109,7 +106,6 @@ def calcular_horas_trabalhadas_periodo(data_inicio, data_fim, profissional=None)
     return total_horas
 
 
-
 @login_required
 @user_passes_test(is_admin)
 def relatorios_gerais(request):
@@ -118,11 +114,9 @@ def relatorios_gerais(request):
     data_fim = request.GET.get('data_fim')
     estabelecimento_id = request.GET.get('estabelecimento_id')
     
-    # Parâmetros de paginação
     page_registros_num = request.GET.get('page_registros', 1)
     page_profissionais_num = request.GET.get('page_profissionais', 1)
     
-    # Filtros
     registros = RegistroPonto.objects.select_related(
         'profissional', 'estabelecimento'
     ).all()
@@ -134,18 +128,15 @@ def relatorios_gerais(request):
     if estabelecimento_id:
         registros = registros.filter(estabelecimento_id=estabelecimento_id)
     
-    # Estatísticas
     total_registros = registros.count()
     entradas = registros.filter(tipo='ENTRADA').count()
     saidas = registros.filter(tipo='SAIDA').count()
     
-    # Calcular horas trabalhadas
     if data_inicio and data_fim:
         horas_trabalhadas = calcular_horas_trabalhadas_periodo(data_inicio, data_fim)
     else:
         horas_trabalhadas = timedelta(0)
     
-    # Agrupar por profissional
     profissionais_ids = registros.values_list('profissional_id', flat=True).distinct()
     por_profissional = []
     
@@ -166,9 +157,8 @@ def relatorios_gerais(request):
             'horas_trabalhadas': horas_prof,
         })
     
-    # Paginação dos registros
     registros_ordenados = registros.order_by('-data', '-horario')
-    paginator_registros = Paginator(registros_ordenados, 20)  # 20 registros por página
+    paginator_registros = Paginator(registros_ordenados, 20)
     
     try:
         page_registros = paginator_registros.page(page_registros_num)
@@ -177,8 +167,7 @@ def relatorios_gerais(request):
     except EmptyPage:
         page_registros = paginator_registros.page(paginator_registros.num_pages)
     
-    # Paginação dos profissionais
-    paginator_profissionais = Paginator(por_profissional, 15)  # 15 profissionais por página
+    paginator_profissionais = Paginator(por_profissional, 15)
     
     try:
         page_profissionais = paginator_profissionais.page(page_profissionais_num)
@@ -205,28 +194,21 @@ def relatorios_gerais(request):
     return render(request, 'core/relatorios_gerais.html', context)
 
 
-
 @login_required
 def relatorio_profissional(request, profissional_id):
     """Relatório do profissional - com verificação de segurança"""
-    
     profissional = get_object_or_404(Profissional, id=profissional_id)
     
-    # ✅ VERIFICAÇÃO DE SEGURANÇA: Usuário comum só pode ver seus próprios dados
     if not request.user.is_superuser and profissional.usuario != request.user:
         messages.error(request, "Acesso não autorizado.")
         return redirect('core:dashboard')
-    profissional = get_object_or_404(Profissional, id=profissional_id)
     
-    # Obter parâmetros de data
     data_inicio = request.GET.get('data_inicio')
     data_fim = request.GET.get('data_fim')
     
-    # Definir datas padrão: início do mês atual e data atual
     hoje = timezone.now().date()
-    inicio_mes = hoje.replace(day=1)  # Primeiro dia do mês atual
+    inicio_mes = hoje.replace(day=1)
     
-    # ✅ CORREÇÃO: Manter as datas como string para o template
     data_inicio_str = data_inicio
     data_fim_str = data_fim
     
@@ -252,22 +234,17 @@ def relatorio_profissional(request, profissional_id):
             data_fim = hoje
             data_fim_str = hoje.strftime('%Y-%m-%d')
     
-    # ✅ CORREÇÃO: Use os campos diretos do Profissional
     estabelecimento = profissional.estabelecimento
-    
-    # ✅ CORREÇÃO CRÍTICA: Verificar se carga_horaria não é None
     carga_horaria_diaria = profissional.carga_horaria_diaria
     carga_horaria_semanal = profissional.carga_horaria_semanal
     
-    # Buscar registros de ponto no período
     registros = RegistroPonto.objects.filter(
         profissional=profissional,
         data__range=[data_inicio, data_fim]
     ).order_by('data', 'horario')
     
-    # ✅ PAGINAÇÃO: Adicionar paginação
     page_number = request.GET.get('page', 1)
-    paginator = Paginator(registros, 20)  # 20 registros por página
+    paginator = Paginator(registros, 20)
     
     try:
         page_obj = paginator.get_page(page_number)
@@ -276,22 +253,18 @@ def relatorio_profissional(request, profissional_id):
     except EmptyPage:
         page_obj = paginator.get_page(paginator.num_pages)
 
-    # ✅ NOVAS ESTATÍSTICAS DE TOLERÂNCIA
     registros_com_atraso = registros.filter(atraso_minutos__gt=0).count()
     registros_com_saida_antecipada = registros.filter(saida_antecipada_minutos__gt=0).count()
     total_atrasos = sum(r.atraso_minutos for r in registros)
     total_saidas_antecipadas = sum(r.saida_antecipada_minutos for r in registros)
     
-    # Calcular médias
     media_atrasos = total_atrasos / registros_com_atraso if registros_com_atraso > 0 else 0
     media_saidas_antecipadas = total_saidas_antecipadas / registros_com_saida_antecipada if registros_com_saida_antecipada > 0 else 0
     
-    # Calcular estatísticas (usar todos os registros, não apenas a página)
     total_registros = registros.count()
     entradas = registros.filter(tipo='ENTRADA').count()
     saidas = registros.filter(tipo='SAIDA').count()
     
-    # Agrupar registros por data para calcular horas trabalhadas
     registros_por_data = {}
     for registro in registros:
         data_str = registro.data.isoformat()
@@ -303,7 +276,6 @@ def relatorio_profissional(request, profissional_id):
         elif registro.tipo == 'SAIDA':
             registros_por_data[data_str]['saida'] = registro.horario
     
-    # Cálculos de horas trabalhadas
     total_horas_trabalhadas = timedelta()
     horas_por_dia_semana = {
         'Segunda': timedelta(),
@@ -323,11 +295,9 @@ def relatorio_profissional(request, profissional_id):
         data_obj = horarios['data_obj']
         
         if entrada and saida:
-            # Converter para datetime para calcular diferença
             entrada_dt = datetime.combine(datetime.min, entrada)
             saida_dt = datetime.combine(datetime.min, saida)
             
-            # Se saída for antes da entrada, assumir que é no dia seguinte
             if saida_dt < entrada_dt:
                 saida_dt += timedelta(days=1)
             
@@ -335,29 +305,23 @@ def relatorio_profissional(request, profissional_id):
             total_horas_trabalhadas += horas_trabalhadas
             dias_trabalhados += 1
             
-            # Adicionar horas ao dia da semana correspondente
             dias_semana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo']
             dia_semana = dias_semana[data_obj.weekday()]
             horas_por_dia_semana[dia_semana] += horas_trabalhadas
     
-    # ✅ CORREÇÃO: Calcular dias úteis com função auxiliar
     def calcular_dias_uteis(data_inicio, data_fim):
-        """Calcula o número de dias úteis (segunda a sexta) no período"""
         dias_uteis = 0
         current_date = data_inicio
         
         while current_date <= data_fim:
-            # Segunda = 0, Sexta = 4
-            if current_date.weekday() < 5:  # Segunda a Sexta
+            if current_date.weekday() < 5:
                 dias_uteis += 1
             current_date += timedelta(days=1)
         
         return dias_uteis
     
-    # Calcular horas previstas
     dias_uteis = calcular_dias_uteis(data_inicio, data_fim)
     
-    # ✅ CORREÇÃO CRÍTICA: Verificar se carga_horaria_diaria não é None
     if carga_horaria_diaria:
         horas_diarias_segundos = carga_horaria_diaria.total_seconds()
         horas_previstas_segundos = horas_diarias_segundos * dias_uteis
@@ -365,10 +329,8 @@ def relatorio_profissional(request, profissional_id):
     else:
         horas_previstas = timedelta()
     
-    # Calcular saldo de horas
     saldo_horas = total_horas_trabalhadas - horas_previstas
     
-    # Converter timedelta para horas legíveis
     def formatar_horas(td):
         if not td:
             return "00:00"
@@ -377,18 +339,15 @@ def relatorio_profissional(request, profissional_id):
         minutos = (total_segundos % 3600) // 60
         return f"{horas:02d}:{minutos:02d}"
     
-    # Converter para horas decimais para cálculos
     def horas_para_decimal(td):
         if not td:
             return 0.0
         return td.total_seconds() / 3600
     
-    # Preparar dados para o template
     horas_trabalhadas_decimal = horas_para_decimal(total_horas_trabalhadas)
     horas_previstas_decimal = horas_para_decimal(horas_previstas)
     diferenca_horas_decimal = horas_trabalhadas_decimal - horas_previstas_decimal
     
-    # Preparar dados para gráfico
     horas_por_dia = []
     for dia, horas in horas_por_dia_semana.items():
         horas_decimal = horas_para_decimal(horas)
@@ -396,12 +355,10 @@ def relatorio_profissional(request, profissional_id):
             'dia': dia,
             'horas': formatar_horas(horas),
             'horas_decimal': horas_decimal,
-            'registros': 2 if horas_decimal > 0 else 0  # Aproximação
+            'registros': 2 if horas_decimal > 0 else 0
         })
     
-    # ✅ CORREÇÃO: Formatar carga horária para exibição
     def formatar_carga_horaria(duration_field):
-        """Formata DurationField para exibição"""
         if not duration_field:
             return "Não definida"
         return formatar_horas(duration_field)
@@ -411,22 +368,18 @@ def relatorio_profissional(request, profissional_id):
         'estabelecimento': estabelecimento,
         'carga_horaria_diaria': formatar_carga_horaria(carga_horaria_diaria),
         'carga_horaria_semanal': formatar_carga_horaria(carga_horaria_semanal),
-        'carga_horaria_diaria_raw': carga_horaria_diaria,  # Mantém o objeto original
-        'carga_horaria_semanal_raw': carga_horaria_semanal,  # Mantém o objeto original
-        'registros': registros,  # Mantém todos os registros para estatísticas
-        'page_obj': page_obj,    # Adiciona objeto de paginação
+        'carga_horaria_diaria_raw': carga_horaria_diaria,
+        'carga_horaria_semanal_raw': carga_horaria_semanal,
+        'registros': registros,
+        'page_obj': page_obj,
         'data_inicio': data_inicio_str,
         'data_fim': data_fim_str,
-        
-         # ✅ NOVOS CAMPOS PARA TOLERÂNCIA
         'registros_com_atraso': registros_com_atraso,
         'registros_com_saida_antecipada': registros_com_saida_antecipada,
         'total_atrasos': total_atrasos,
         'total_saidas_antecipadas': total_saidas_antecipadas,
         'media_atrasos': media_atrasos,
         'media_saidas_antecipadas': media_saidas_antecipadas,
-
-        # Estatísticas
         'total_registros': total_registros,
         'entradas': entradas,
         'saidas': saidas,
@@ -438,16 +391,13 @@ def relatorio_profissional(request, profissional_id):
         'saldo_horas': formatar_horas(saldo_horas),
         'dias_uteis': dias_uteis,
         'dias_trabalhados': dias_trabalhados,
-        
-        # Dados para gráficos
         'horas_por_dia': horas_por_dia,
-        
-        # Campos que o template espera
         'carga_horaria_esperada': formatar_horas(horas_previstas),
         'vinculo': {'estabelecimento': estabelecimento} if estabelecimento else None,
     }
     
     return render(request, 'core/relatorio_profissional.html', context)
+
 
 @login_required
 def meu_perfil(request):
@@ -458,14 +408,12 @@ def meu_perfil(request):
     
     profissional = request.user.profissional
     
-    # Histórico de pontos (últimos 30 dias)
     trinta_dias_atras = timezone.now().date() - timedelta(days=30)
     registros = RegistroPonto.objects.filter(
         profissional=profissional,
         data__gte=trinta_dias_atras
     ).select_related('estabelecimento').order_by('-data', '-horario')[:30]
     
-    # Horas do mês
     inicio_mes = timezone.now().replace(day=1).date()
     horas_mes = calcular_horas_trabalhadas_periodo(inicio_mes, timezone.now().date(), profissional)
     
@@ -476,25 +424,22 @@ def meu_perfil(request):
     }
     return render(request, 'core/meu_perfil.html', context)
 
-# ===== FUNÇÕES AUXILIARES CORRIGIDAS =====
 
 def calcular_dias_uteis(data_inicio, data_fim):
     """Calcula quantidade de dias úteis no período"""
-    # ✅ CORREÇÃO: Esta função agora recebe objetos date, não strings
     dias_uteis = 0
     current_date = data_inicio
     
     while current_date <= data_fim:
-        # Considera apenas dias de semana (segunda a sexta)
         if current_date.weekday() < 5:
             dias_uteis += 1
         current_date += timedelta(days=1)
     
     return dias_uteis
 
+
 def calcular_horas_trabalhadas_por_dia_semana(data_inicio, data_fim, profissional, dia_semana):
     """Calcula horas trabalhadas para um específico dia da semana"""
-    # ✅ CORREÇÃO: Esta função agora recebe objetos date, não strings
     registros = RegistroPonto.objects.filter(
         profissional=profissional,
         data__gte=data_inicio,
@@ -503,6 +448,7 @@ def calcular_horas_trabalhadas_por_dia_semana(data_inicio, data_fim, profissiona
     ).order_by('data', 'horario')
     
     return calcular_horas_trabalhadas_periodo(data_inicio, data_fim, profissional)
+
 
 def calcular_horas_trabalhadas_dia(registros_dia):
     """Calcula horas trabalhadas em um dia específico"""
@@ -524,6 +470,7 @@ def calcular_horas_trabalhadas_dia(registros_dia):
             data_entrada = None
     
     return horas_dia
+
 
 def gerar_pdf_relatorio_profissional(request, profissional, registros, horas_trabalhadas,
                                    carga_horaria_diaria, carga_horaria_semanal, 
@@ -559,33 +506,27 @@ def gerar_pdf_relatorio_profissional(request, profissional, registros, horas_tra
     
     return response
 
+
 def gerar_pdf_relatorio_consolidado(request, context):
     """Gera PDF do relatório consolidado"""
     try:
-        # Adicionar variáveis adicionais ao contexto
         context['gerado_em'] = timezone.now()
         context['usuario_gerador'] = request.user.get_full_name() or request.user.username
         
         html_string = render_to_string('core/relatorio_consolidado_pdf.html', context)
         
-        # Configurar resposta
         response = HttpResponse(content_type='application/pdf')
         filename = f"relatorio_consolidado_{context['profissional'].cpf}_{timezone.now().strftime('%Y%m%d_%H%M')}.pdf"
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         
-        # Gerar PDF
         HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf(response)
         
         return response
         
     except Exception as e:
-        # Log do erro
-        print(f"Erro ao gerar PDF: {str(e)}")
-        
-        # Retornar erro amigável
-        messages.error(request, f"Erro ao gerar PDF: {str(e)}")
+        messages.error(request, "Erro ao gerar PDF")
         return redirect(request.META.get('HTTP_REFERER', 'core:relatorio_profissional'))
-# ===== VIEWS DE HISTÓRICO E ESTATÍSTICAS =====
+
 
 @login_required
 @user_passes_test(is_admin)
@@ -593,12 +534,10 @@ def historico_pontos_profissional(request, profissional_id):
     """Histórico completo de pontos de um profissional"""
     profissional = get_object_or_404(Profissional, id=profissional_id)
     
-    # Parâmetros de filtro
     data_inicio = request.GET.get('data_inicio')
     data_fim = request.GET.get('data_fim')
     estabelecimento_id = request.GET.get('estabelecimento_id')
     
-    # Filtros
     registros = RegistroPonto.objects.filter(
         profissional=profissional
     ).select_related('estabelecimento').order_by('-data', '-horario')
@@ -610,32 +549,25 @@ def historico_pontos_profissional(request, profissional_id):
     if estabelecimento_id:
         registros = registros.filter(estabelecimento_id=estabelecimento_id)
     
-    # Agrupar registros por dia
     registros_por_dia = defaultdict(list)
     for registro in registros:
         registros_por_dia[registro.data].append(registro)
     
-    # Calcular horas trabalhadas por dia
     horas_por_dia = {}
     for data_dia, registros_dia in registros_por_dia.items():
         horas_dia = calcular_horas_trabalhadas_dia(registros_dia)
         horas_por_dia[data_dia] = horas_dia
     
-    # Estatísticas
     total_registros = registros.count()
     entradas = registros.filter(tipo='ENTRADA').count()
     saidas = registros.filter(tipo='SAIDA').count()
     
-    # Horas trabalhadas totais
     horas_trabalhadas = sum(horas_por_dia.values(), timedelta())
     
-    # Dias trabalhados
     dias_trabalhados = len(horas_por_dia)
     
-    # Média de horas por dia
     media_horas_dia = horas_trabalhadas / dias_trabalhados if dias_trabalhados > 0 else timedelta()
     
-    # Estabelecimentos para filtro
     estabelecimentos = Estabelecimento.objects.all()
     
     context = {
@@ -656,17 +588,16 @@ def historico_pontos_profissional(request, profissional_id):
     }
     return render(request, 'core/historico_pontos.html', context)
 
+
 @login_required
 @user_passes_test(is_admin)
 def horas_trabalhadas_profissional(request, profissional_id):
     """Relatório detalhado de horas trabalhadas"""
     profissional = get_object_or_404(Profissional, id=profissional_id)
     
-    # Parâmetros
     mes = request.GET.get('mes')
     ano = request.GET.get('ano', timezone.now().year)
     
-    # Definir período
     if mes:
         data_inicio = date(int(ano), int(mes), 1)
         if int(mes) == 12:
@@ -674,11 +605,9 @@ def horas_trabalhadas_profissional(request, profissional_id):
         else:
             data_fim = date(int(ano), int(mes) + 1, 1) - timedelta(days=1)
     else:
-        # Últimos 30 dias como padrão
         data_fim = timezone.now().date()
         data_inicio = data_fim - timedelta(days=30)
     
-    # Calcular horas por dia
     dias_trabalho = []
     data_atual = data_inicio
     
@@ -692,20 +621,11 @@ def horas_trabalhadas_profissional(request, profissional_id):
             })
         data_atual += timedelta(days=1)
     
-    # Estatísticas
     total_horas = sum((dia['horas'] for dia in dias_trabalho), timedelta())
     total_horas_decimal = total_horas.total_seconds() / 3600
     media_horas_dia = total_horas / len(dias_trabalho) if dias_trabalho else timedelta()
     
-    # Carga horária esperada
-    vinculo = ProfissionalEstabelecimento.objects.filter(
-        profissional=profissional, ativo=True
-    ).first()
-    carga_horaria_diaria = vinculo.carga_horaria_diaria if vinculo else timedelta(hours=8)
-    
-    # Dias úteis no período
     dias_uteis = calcular_dias_uteis(data_inicio, data_fim)
-    horas_esperadas = carga_horaria_diaria * dias_uteis
     
     context = {
         'profissional': profissional,
@@ -713,10 +633,7 @@ def horas_trabalhadas_profissional(request, profissional_id):
         'total_horas': total_horas,
         'total_horas_decimal': total_horas_decimal,
         'media_horas_dia': media_horas_dia,
-        'carga_horaria_diaria': carga_horaria_diaria,
         'dias_uteis': dias_uteis,
-        'horas_esperadas': horas_esperadas,
-        'diferenca_horas': total_horas - horas_esperadas,
         'mes': mes,
         'ano': ano,
         'data_inicio': data_inicio,
@@ -724,13 +641,13 @@ def horas_trabalhadas_profissional(request, profissional_id):
     }
     return render(request, 'core/horas_trabalhadas.html', context)
 
+
 @login_required
 @user_passes_test(is_admin)
 def analise_frequencia_profissional(request, profissional_id):
     """Análise de frequência e faltas"""
     profissional = get_object_or_404(Profissional, id=profissional_id)
     
-    # Parâmetros
     mes = request.GET.get('mes')
     ano = request.GET.get('ano', timezone.now().year)
     
@@ -741,33 +658,27 @@ def analise_frequencia_profissional(request, profissional_id):
         else:
             data_fim = date(int(ano), int(mes) + 1, 1) - timedelta(days=1)
     else:
-        # Mês atual como padrão
         hoje = timezone.now().date()
         data_inicio = hoje.replace(day=1)
         data_fim = hoje
     
-    # Dias úteis no período
     dias_uteis = calcular_dias_uteis(data_inicio, data_fim)
     
-    # Dias trabalhados
     dias_com_registro = RegistroPonto.objects.filter(
         profissional=profissional,
         data__gte=data_inicio,
         data__lte=data_fim
     ).values('data').distinct().count()
     
-    # Faltas
     faltas = max(0, dias_uteis - dias_com_registro)
     
-    # Percentual de frequência
     percentual_frequencia = (dias_com_registro / dias_uteis * 100) if dias_uteis > 0 else 0
     
-    # Dias com registro incompleto (apenas entrada ou apenas saída)
     dias_incompletos = 0
     data_atual = data_inicio
     
     while data_atual <= data_fim:
-        if data_atual.weekday() < 5:  # Apenas dias úteis
+        if data_atual.weekday() < 5:
             registros_dia = RegistroPonto.objects.filter(
                 profissional=profissional,
                 data=data_atual
@@ -793,13 +704,13 @@ def analise_frequencia_profissional(request, profissional_id):
     }
     return render(request, 'core/analise_frequencia.html', context)
 
+
 @login_required
 @user_passes_test(is_admin)
 def relatorio_consolidado_profissional(request, profissional_id):
     """Relatório consolidado com todos os dados"""
     profissional = get_object_or_404(Profissional, id=profissional_id)
     
-    # Parâmetros
     mes = request.GET.get('mes')
     ano = request.GET.get('ano', timezone.now().year)
     
@@ -810,14 +721,11 @@ def relatorio_consolidado_profissional(request, profissional_id):
         else:
             data_fim = date(int(ano), int(mes) + 1, 1) - timedelta(days=1)
     else:
-        # Últimos 30 dias
         data_fim = timezone.now().date()
         data_inicio = data_fim - timedelta(days=30)
     
-    # Dados de horas trabalhadas
     horas_trabalhadas = calcular_horas_trabalhadas_periodo(data_inicio, data_fim, profissional)
     
-    # Dados de frequência
     dias_uteis = calcular_dias_uteis(data_inicio, data_fim)
     dias_trabalhados = RegistroPonto.objects.filter(
         profissional=profissional,
@@ -825,14 +733,6 @@ def relatorio_consolidado_profissional(request, profissional_id):
         data__lte=data_fim
     ).values('data').distinct().count()
     
-    # Carga horária
-    vinculo = ProfissionalEstabelecimento.objects.filter(
-        profissional=profissional, ativo=True
-    ).first()
-    carga_horaria_diaria = vinculo.carga_horaria_diaria if vinculo else timedelta(hours=8)
-    horas_esperadas = carga_horaria_diaria * dias_uteis
-    
-    # Estatísticas de registros
     registros = RegistroPonto.objects.filter(
         profissional=profissional,
         data__gte=data_inicio,
@@ -850,9 +750,6 @@ def relatorio_consolidado_profissional(request, profissional_id):
         'dias_uteis': dias_uteis,
         'dias_trabalhados': dias_trabalhados,
         'faltas': dias_uteis - dias_trabalhados,
-        'carga_horaria_diaria': carga_horaria_diaria,
-        'horas_esperadas': horas_esperadas,
-        'diferenca_horas': horas_trabalhadas - horas_esperadas,
         'total_registros': total_registros,
         'entradas': entradas,
         'saidas': saidas,
@@ -860,13 +757,12 @@ def relatorio_consolidado_profissional(request, profissional_id):
         'ano': ano,
     }
     
-    # Gerar PDF se solicitado
     if 'pdf' in request.GET:
         return gerar_pdf_relatorio_consolidado(request, context)
     
     return render(request, 'core/relatorio_consolidado.html', context)
 
-# ===== FUNÇÃO AUXILIAR PARA OBTER IP =====
+
 def get_client_ip(request):
     """Obtém o IP do cliente"""
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -876,22 +772,20 @@ def get_client_ip(request):
         ip = request.META.get('REMOTE_ADDR')
     return ip
 
+
 @login_required
 def relatorio_profissional_pdf(request, profissional_id):
     """Gera PDF do relatório do profissional"""
     try:
         profissional = get_object_or_404(Profissional, id=profissional_id)
         
-        # ✅ VERIFICAÇÃO DE SEGURANÇA
         if not request.user.is_superuser and profissional.usuario != request.user:
             messages.error(request, "Acesso não autorizado.")
             return redirect('core:dashboard')
         
-        # Obter parâmetros de data
         data_inicio = request.GET.get('data_inicio')
         data_fim = request.GET.get('data_fim')
         
-        # Definir datas padrão
         hoje = timezone.now().date()
         inicio_mes = hoje.replace(day=1)
         
@@ -911,17 +805,14 @@ def relatorio_profissional_pdf(request, profissional_id):
             except ValueError:
                 data_fim = hoje
         
-        # Buscar registros
         registros = RegistroPonto.objects.filter(
             profissional=profissional,
             data__range=[data_inicio, data_fim]
         ).order_by('data', 'horario')
         
-        # Calcular horas trabalhadas
         horas_trabalhadas = calcular_horas_trabalhadas_periodo(data_inicio, data_fim, profissional)
         horas_trabalhadas_decimal = horas_trabalhadas.total_seconds() / 3600
         
-        # Calcular dias úteis e horas previstas
         dias_uteis = calcular_dias_uteis(data_inicio, data_fim)
         if profissional.carga_horaria_diaria:
             horas_previstas_segundos = profissional.carga_horaria_diaria.total_seconds() * dias_uteis
@@ -932,7 +823,6 @@ def relatorio_profissional_pdf(request, profissional_id):
         diferenca_horas = horas_trabalhadas - horas_previstas
         diferenca_horas_decimal = horas_trabalhadas_decimal - (horas_previstas.total_seconds() / 3600)
         
-        # Preparar dados para PDF
         def formatar_horas(td):
             if not td:
                 return "00:00"
@@ -959,20 +849,16 @@ def relatorio_profissional_pdf(request, profissional_id):
             'vinculo': {'estabelecimento': profissional.estabelecimento} if profissional.estabelecimento else None,
         }
         
-        # Gerar HTML para PDF
         html_string = render_to_string('core/relatorio_profissional_pdf.html', context)
         
-        # Configurar resposta PDF
         response = HttpResponse(content_type='application/pdf')
         filename = f"relatorio_{profissional.cpf}_{timezone.now().strftime('%Y%m%d_%H%M')}.pdf"
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         
-        # Gerar PDF
         HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf(response)
         
         return response
         
     except Exception as e:
-        print(f"Erro ao gerar PDF: {str(e)}")
-        messages.error(request, f"Erro ao gerar PDF: {str(e)}")
+        messages.error(request, "Erro ao gerar PDF")
         return redirect('core:relatorio_profissional', profissional_id=profissional_id)
