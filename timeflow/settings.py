@@ -220,3 +220,10 @@ LOGGING = {
 }
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+# Configuração específica PythonAnywhere
+if 'pythonanywhere' in __file__:
+    DEBUG = False  # Garante produção
+    # Caminhos absolutos para PythonAnywhere
+    STATIC_ROOT = '/home/timeflow/timeflow/staticfiles'
+    MEDIA_ROOT = '/home/timeflow/timeflow/media'
