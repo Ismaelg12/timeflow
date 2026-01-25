@@ -164,37 +164,40 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/4.2/topics/i18n/
-
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
+LANGUAGE_CODE = 'pt-br'  
+TIME_ZONE = 'America/Sao_Paulo' 
 USE_I18N = True
-
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.2/howto/static-files/
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'), 
+]
+
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-# core/settings.py
 
-# Configure o LOGIN_REDIRECT_URL para apontar para /bemvindo/
-
-LOGIN_REDIRECT_URL = '/' 
+# Authentication URLs
+LOGIN_URL = 'login'  
+LOGIN_REDIRECT_URL = '/'  
 LOGOUT_REDIRECT_URL = '/'  
 
-# settings.py - Adicione na seção LOGGING
-# settings.py
+# CORS settings
+CORS_ALLOW_ALL_ORIGINS = True  
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    # Adicione outros domínios se necessário
+]
+
+# Logging configuration
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -203,27 +206,51 @@ LOGGING = {
             'format': '{levelname} {asctime} {module} {message}',
             'style': '{',
         },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
     },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
         },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'debug.log'),
+            'formatter': 'verbose',
+        },
     },
     'loggers': {
-        'api.views': {
-            'handlers': ['console'],
-            'level': 'DEBUG',  
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'api': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'usuarios': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
             'propagate': True,
         },
     },
 }
 
-CORS_ALLOW_ALL_ORIGINS = True
-
-# Configuração específica PythonAnywhere
+# Configurações específicas para PythonAnywhere
 if 'pythonanywhere' in __file__:
-    DEBUG = False  # Garante produção
+    DEBUG = False
     # Caminhos absolutos para PythonAnywhere
     STATIC_ROOT = '/home/timeflow/timeflow/staticfiles'
+    STATICFILES_DIRS = [
+        '/home/timeflow/timeflow/static',
+    ]
     MEDIA_ROOT = '/home/timeflow/timeflow/media'
+    
+    # Configuração de arquivos estáticos para PythonAnywhere
+    STATIC_URL = '/static/'
+    MEDIA_URL = '/media/'
