@@ -43,14 +43,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
-    # Third party apps
     'rest_framework',
     'rest_framework_simplejwt',
-    'api', 
+    'api',  
     'corsheaders',
-    
-    # Local apps
     'usuarios',
     'municipio',
     'estabelecimentos', 
@@ -80,7 +76,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
+        # 'rest_framework.permissions.IsAuthenticated',
         'rest_framework.permissions.AllowAny',
     ),
     'DEFAULT_RENDERER_CLASSES': (
@@ -164,93 +160,35 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-LANGUAGE_CODE = 'pt-br'  
-TIME_ZONE = 'America/Sao_Paulo' 
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+# Internationalization
+# https://docs.djangoproject.com/en/4.2/topics/i18n/
+
+LANGUAGE_CODE = 'pt-br'
+
+TIME_ZONE = 'America/Sao_Paulo'
+
 USE_I18N = True
-USE_TZ = True
+
+USE_L10N = True
+
+USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'), 
-]
+# https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-# Media files
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Default primary key field type
+# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# core/settings.py
 
-# Authentication URLs
-LOGIN_URL = 'login'  
-LOGIN_REDIRECT_URL = '/'  
-LOGOUT_REDIRECT_URL = '/'  
+# Configure o LOGIN_REDIRECT_URL para apontar para /bemvindo/
 
-# CORS settings
-CORS_ALLOW_ALL_ORIGINS = True  
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    # Adicione outros domínios se necessário
-]
+LOGIN_REDIRECT_URL = '/'  # ✅ Para onde ir após login bem-sucedido
+LOGOUT_REDIRECT_URL = '/'  # ✅ Para onde ir após logout
 
-# Logging configuration
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
-        },
-        'file': {
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'debug.log'),
-            'formatter': 'verbose',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-        'api': {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-        'usuarios': {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-    },
-}
-
-# Configurações específicas para PythonAnywhere
-if 'pythonanywhere' in __file__:
-    DEBUG = False
-    # Caminhos absolutos para PythonAnywhere
-    STATIC_ROOT = '/home/timeflow/timeflow/staticfiles'
-    STATICFILES_DIRS = [
-        '/home/timeflow/timeflow/static',
-    ]
-    MEDIA_ROOT = '/home/timeflow/timeflow/media'
-    
-    # Configuração de arquivos estáticos para PythonAnywhere
-    STATIC_URL = '/static/'
-    MEDIA_URL = '/media/'
