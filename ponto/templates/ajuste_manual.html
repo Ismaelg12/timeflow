@@ -1,0 +1,91 @@
+<!-- templates/ponto/ajuste_manual.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-warning text-dark">
+            <h4 class="mb-0">
+                <i class="fas fa-clock"></i> Ajuste Manual de Registro de Ponto
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> 
+                Use este formulário para registrar ponto manualmente em caso de esquecimento.
+                <strong>Estas marcações ficarão registradas como ajustes manuais.</strong>
+            </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ form.profissional.label }}</label>
+                        {{ form.profissional }}
+                        {% if form.profissional.errors %}
+                        <div class="text-danger">{{ form.profissional.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">{{ form.data.label }}</label>
+                        {{ form.data }}
+                        {% if form.data.errors %}
+                        <div class="text-danger">{{ form.data.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">{{ form.horario.label }}</label>
+                        {{ form.horario }}
+                        {% if form.horario.errors %}
+                        <div class="text-danger">{{ form.horario.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">{{ form.tipo.label }}</label>
+                        {{ form.tipo }}
+                        {% if form.tipo.errors %}
+                        <div class="text-danger">{{ form.tipo.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">{{ form.motivo.label }}</label>
+                        {{ form.motivo }}
+                        {% if form.motivo.errors %}
+                        <div class="text-danger">{{ form.motivo.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">{{ form.descricao.label }}</label>
+                    {{ form.descricao }}
+                    {% if form.descricao.errors %}
+                    <div class="text-danger">{{ form.descricao.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="alert alert-warning">
+                    <strong>Atenção:</strong> Este ajuste será registrado e poderá ser auditado. 
+                    Registros manuais frequentes podem gerar advertências.
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'core:dashboard' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Salvar Ajuste
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -29,4 +29,6 @@ urlpatterns = [
     
     # Perfil do usuário
     path('meu-perfil/', views.meu_perfil, name='meu_perfil'),
+    path('ponto/', include('ponto.urls')),
+
 ]

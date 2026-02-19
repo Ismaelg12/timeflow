@@ -17,6 +17,8 @@
             --light-bg: #f5f7fb;
             --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             --hover-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+            --plantao-12h-color: #ff9800;
+            --plantao-24h-color: #4361ee;
         }
         
         body {
@@ -202,6 +204,11 @@
             border-color: #e74c3c !important;
         }
         
+        .is-warning {
+            border-color: #ff9800 !important;
+            background-color: rgba(255, 152, 0, 0.05) !important;
+        }
+        
         .invalid-feedback {
             font-size: 0.85rem;
         }
@@ -214,6 +221,73 @@
             padding: 0.75rem;
             margin-top: 0.5rem;
             font-size: 0.9rem;
+        }
+        
+        /* Plantão badges */
+        .plantao-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+        
+        .plantao-12h {
+            background-color: rgba(255, 152, 0, 0.1);
+            color: var(--plantao-12h-color);
+            border: 1px solid var(--plantao-12h-color);
+        }
+        
+        .plantao-24h {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--plantao-24h-color);
+            border: 1px solid var(--plantao-24h-color);
+        }
+        
+        /* Plantão info */
+        .plantao-info {
+            background: linear-gradient(135deg, #fff8e1, #ffecb3);
+            border-left: 4px solid var(--plantao-12h-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        
+        .plantao-24h-info {
+            background: linear-gradient(135deg, #e8f4fd, #d0e7ff);
+            border-left: 4px solid var(--plantao-24h-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        
+        /* Plantão 24h explicação */
+        .plantao-24h-explicacao {
+            background: linear-gradient(135deg, #e8f4fd, #d0e7ff);
+            border: 1px solid var(--plantao-24h-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .plantao-24h-explicacao ul {
+            margin-bottom: 0;
+        }
+        
+        .plantao-24h-explicacao li {
+            margin-bottom: 0.25rem;
+        }
+        
+        /* Option highlighting */
+        .plantao-option {
+            color: var(--plantao-12h-color);
+            font-weight: 600;
+        }
+        
+        .plantao-24h-option {
+            color: var(--plantao-24h-color);
+            font-weight: 600;
         }
     </style>
 </head>
@@ -267,8 +341,6 @@
                                     {% endif %}
                                 </div>
                             </div>
-                            
-                            <!-- REMOVI O CAMPO EMAIL - NÃO EXISTE NO SEU MODELO -->
                         </div>
 
                         <div class="row">
@@ -369,7 +441,9 @@
                                         </span>
                                         {{ form.carga_horaria_diaria }}
                                     </div>
-                                    <small class="form-text text-muted">Horas trabalhadas por dia</small>
+                                    <small class="form-text text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>Para plantões, selecione 12h ou 24h
+                                    </small>
                                     {% if form.carga_horaria_diaria.errors %}
                                     <div class="invalid-feedback d-block">
                                         {{ form.carga_horaria_diaria.errors }}
@@ -398,6 +472,36 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Informações sobre plantões -->
+                        <div id="plantao-info-12h" class="plantao-info" style="display: none;">
+                            <div class="d-flex align-items-start">
+                                <i class="fas fa-clock me-2" style="color: var(--plantao-12h-color); margin-top: 0.2rem;"></i>
+                                <div>
+                                    <strong>Plantão 12 horas</strong>
+                                    <ul class="mb-0 mt-2 ps-3">
+                                        <li>Recomendado informar horários de entrada e saída</li>
+                                        <li>Tolerância maior permitida (até 60 minutos)</li>
+                                        <li>Cálculo automático ajustado para jornadas longas</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="plantao-info-24h" class="plantao-24h-info" style="display: none;">
+                            <div class="d-flex align-items-start">
+                                <i class="fas fa-hospital me-2" style="color: var(--plantao-24h-color); margin-top: 0.2rem;"></i>
+                                <div>
+                                    <strong>Plantão 24 horas</strong>
+                                    <ul class="mb-0 mt-2 ps-3">
+                                        <li>Horários de entrada/saída são opcionais</li>
+                                        <li>Tolerância de até 60 minutos permitida</li>
+                                        <li>O sistema calcula 24h por dia de trabalho</li>
+                                        <li>Ideal para profissionais de saúde e segurança</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- SEÇÃO: Horários de Trabalho -->
@@ -409,8 +513,9 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="{{ form.horario_entrada.id_for_label }}" class="form-label required-field">
+                                    <label for="{{ form.horario_entrada.id_for_label }}" class="form-label">
                                         Horário de Entrada
+                                        <span id="entrada-obrigatorio" class="required-field" style="display: inline;"></span>
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text">
@@ -418,7 +523,7 @@
                                         </span>
                                         {{ form.horario_entrada }}
                                     </div>
-                                    <small class="form-text text-muted">
+                                    <small id="entrada-help" class="form-text text-muted">
                                         {{ form.horario_entrada.help_text }}
                                     </small>
                                     {% if form.horario_entrada.errors %}
@@ -431,8 +536,9 @@
                             
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="{{ form.horario_saida.id_for_label }}" class="form-label required-field">
+                                    <label for="{{ form.horario_saida.id_for_label }}" class="form-label">
                                         Horário de Saída
+                                        <span id="saida-obrigatorio" class="required-field" style="display: inline;"></span>
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text">
@@ -440,7 +546,7 @@
                                         </span>
                                         {{ form.horario_saida }}
                                     </div>
-                                    <small class="form-text text-muted">
+                                    <small id="saida-help" class="form-text text-muted">
                                         {{ form.horario_saida.help_text }}
                                     </small>
                                     {% if form.horario_saida.errors %}
@@ -462,7 +568,7 @@
                                         </span>
                                         {{ form.tolerancia_minutos }}
                                     </div>
-                                    <small class="form-text text-muted">
+                                    <small id="tolerancia-help" class="form-text text-muted">
                                         {{ form.tolerancia_minutos.help_text }}
                                     </small>
                                     {% if form.tolerancia_minutos.errors %}
@@ -478,6 +584,17 @@
                         <div id="horario-calculado-info" class="horario-calculado" style="display: none;">
                             <i class="fas fa-calculator me-2"></i>
                             <strong>Jornada calculada:</strong> <span id="jornada-calculada"></span> horas
+                        </div>
+                        
+                        <!-- Explicação para plantão 24h -->
+                        <div id="plantao-24h-explicacao" class="plantao-24h-explicacao" style="display: none;">
+                            <strong><i class="fas fa-info-circle me-1" style="color: var(--plantao-24h-color);"></i> Plantão 24 Horas:</strong>
+                            <ul class="mt-2 mb-0">
+                                <li>Entrada e saída podem ser em dias diferentes</li>
+                                <li>Exemplo: Entrada 06:00 → Saída 06:00 (dia seguinte)</li>
+                                <li>O sistema calculará automaticamente 24 horas</li>
+                                <li>Horários são opcionais para plantão 24h</li>
+                            </ul>
                         </div>
                         
                         <div class="alert alert-info mt-3">
@@ -606,6 +723,21 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Elementos do formulário
+            const cargaDiariaSelect = document.getElementById('id_carga_horaria_diaria');
+            const cargaSemanalSelect = document.getElementById('id_carga_horaria_semanal');
+            const entradaField = document.getElementById('id_horario_entrada');
+            const saidaField = document.getElementById('id_horario_saida');
+            const toleranciaSelect = document.getElementById('id_tolerancia_minutos');
+            const entradaHelp = document.getElementById('entrada-help');
+            const saidaHelp = document.getElementById('saida-help');
+            const toleranciaHelp = document.getElementById('tolerancia-help');
+            const entradaObrigatorio = document.getElementById('entrada-obrigatorio');
+            const saidaObrigatorio = document.getElementById('saida-obrigatorio');
+            const plantao12hInfo = document.getElementById('plantao-info-12h');
+            const plantao24hInfo = document.getElementById('plantao-info-24h');
+            const plantao24hExplicacao = document.getElementById('plantao-24h-explicacao');
+            
             // Máscara para telefone
             function mascaraFone(event) {
                 var input = event.target;
@@ -623,18 +755,143 @@
                 input.value = retorno;
             }
 
+            // Função para atualizar campos baseado no tipo de plantão
+            function updatePlantaoFields() {
+                const cargaDiariaValue = cargaDiariaSelect ? cargaDiariaSelect.value : '';
+                
+                // Esconder todas as informações primeiro
+                if (plantao12hInfo) plantao12hInfo.style.display = 'none';
+                if (plantao24hInfo) plantao24hInfo.style.display = 'none';
+                if (plantao24hExplicacao) plantao24hExplicacao.style.display = 'none';
+                
+                // Remover classes de plantão das opções
+                if (cargaDiariaSelect) {
+                    Array.from(cargaDiariaSelect.options).forEach(option => {
+                        option.classList.remove('plantao-option', 'plantao-24h-option');
+                    });
+                }
+                
+                // Configurar para plantão 12h
+                if (cargaDiariaValue === '12:00:00') {
+                    if (plantao12hInfo) plantao12hInfo.style.display = 'block';
+                    
+                    // Marcar opção como plantão
+                    if (cargaDiariaSelect) {
+                        const selectedOption = cargaDiariaSelect.options[cargaDiariaSelect.selectedIndex];
+                        if (selectedOption) {
+                            selectedOption.classList.add('plantao-option');
+                        }
+                    }
+                    
+                    // Configurar campos de horário
+                    if (entradaField) {
+                        entradaField.required = true;
+                        entradaField.placeholder = 'HH:MM (Recomendado)';
+                    }
+                    if (saidaField) {
+                        saidaField.required = true;
+                        saidaField.placeholder = 'HH:MM (Recomendado)';
+                    }
+                    if (entradaObrigatorio) entradaObrigatorio.style.display = 'inline';
+                    if (saidaObrigatorio) saidaObrigatorio.style.display = 'inline';
+                    if (entradaHelp) entradaHelp.textContent = 'Informe o horário de início do plantão 12h';
+                    if (saidaHelp) saidaHelp.textContent = 'Informe o horário de término do plantão 12h';
+                    
+                    // Habilitar tolerância maior
+                    if (toleranciaSelect) {
+                        Array.from(toleranciaSelect.options).forEach(option => {
+                            if (option.value === '60') {
+                                option.disabled = false;
+                                option.style.display = 'block';
+                            }
+                        });
+                    }
+                    if (toleranciaHelp) toleranciaHelp.textContent = 'Para plantões 12h, tolerância de até 60 minutos permitida';
+                }
+                // Configurar para plantão 24h
+                else if (cargaDiariaValue === '24:00:00') {
+                    if (plantao24hInfo) plantao24hInfo.style.display = 'block';
+                    if (plantao24hExplicacao) plantao24hExplicacao.style.display = 'block';
+                    
+                    // Marcar opção como plantão 24h
+                    if (cargaDiariaSelect) {
+                        const selectedOption = cargaDiariaSelect.options[cargaDiariaSelect.selectedIndex];
+                        if (selectedOption) {
+                            selectedOption.classList.add('plantao-24h-option');
+                        }
+                    }
+                    
+                    // Configurar campos de horário (opcionais)
+                    if (entradaField) {
+                        entradaField.required = false;
+                        entradaField.placeholder = 'HH:MM (Opcional - ex: 06:00)';
+                    }
+                    if (saidaField) {
+                        saidaField.required = false;
+                        saidaField.placeholder = 'HH:MM (Opcional - ex: 06:00)';
+                    }
+                    if (entradaObrigatorio) entradaObrigatorio.style.display = 'none';
+                    if (saidaObrigatorio) saidaObrigatorio.style.display = 'none';
+                    if (entradaHelp) entradaHelp.textContent = 'Horário opcional para plantão 24h (pode ser igual à entrada)';
+                    if (saidaHelp) saidaHelp.textContent = 'Horário opcional para plantão 24h (pode ser igual à entrada)';
+                    
+                    // Habilitar tolerância maior
+                    if (toleranciaSelect) {
+                        Array.from(toleranciaSelect.options).forEach(option => {
+                            if (option.value === '60') {
+                                option.disabled = false;
+                                option.style.display = 'block';
+                            }
+                        });
+                    }
+                    if (toleranciaHelp) toleranciaHelp.textContent = 'Para plantão 24h, tolerância de até 60 minutos permitida';
+                }
+                // Configuração padrão (não é plantão)
+                else {
+                    if (entradaField) {
+                        entradaField.required = true;
+                        entradaField.placeholder = 'HH:MM';
+                    }
+                    if (saidaField) {
+                        saidaField.required = true;
+                        saidaField.placeholder = 'HH:MM';
+                    }
+                    if (entradaObrigatorio) entradaObrigatorio.style.display = 'inline';
+                    if (saidaObrigatorio) saidaObrigatorio.style.display = 'inline';
+                    if (entradaHelp) entradaHelp.textContent = 'Horário de entrada esperado';
+                    if (saidaHelp) saidaHelp.textContent = 'Horário de saída esperado';
+                    
+                    // Desabilitar tolerância de 60 minutos para não-plantões
+                    if (toleranciaSelect) {
+                        Array.from(toleranciaSelect.options).forEach(option => {
+                            if (option.value === '60') {
+                                option.disabled = true;
+                                option.style.display = 'none';
+                                if (toleranciaSelect.value === '60') {
+                                    toleranciaSelect.value = '30'; // Valor padrão se estava selecionado
+                                }
+                            }
+                        });
+                    }
+                    if (toleranciaHelp) toleranciaHelp.textContent = 'Tolerância para atrasos e saídas antecipadas';
+                }
+                
+                // Recalcular jornada se houver horários
+                if (entradaField && saidaField && entradaField.value && saidaField.value) {
+                    calcularJornada();
+                }
+            }
+
             // Cálculo automático da carga horária semanal
             function setupCargaHoraria() {
-                const cargaDiaria = document.getElementById('id_carga_horaria_diaria');
-                const cargaSemanal = document.getElementById('id_carga_horaria_semanal');
-                
-                if (cargaDiaria && cargaSemanal) {
-                    cargaDiaria.addEventListener('change', function(e) {
-                        const cargaDiariaValue = e.target.value;
+                if (cargaDiariaSelect && cargaSemanalSelect) {
+                    cargaDiariaSelect.addEventListener('change', function(e) {
+                        updatePlantaoFields();
                         
-                        if (cargaDiariaValue) {
+                        // Atualizar cálculo semanal apenas se não for plantão 24h
+                        if (e.target.value && e.target.value !== '24:00:00') {
                             // Converte horas para segundos e calcula semana (5 dias)
-                            const [hours, minutes, seconds] = cargaDiariaValue.split(':').map(Number);
+                            const [hours, minutes, seconds] = e.target.value.split(':').map(Number);
                             const totalSecondsDiaria = (hours * 3600) + (minutes * 60) + (seconds || 0);
                             const totalSecondsSemana = totalSecondsDiaria * 5;
                             
@@ -650,12 +907,15 @@
                                 segundosSemana.toString().padStart(2, '0');
                             
                             // Encontra e seleciona a opção correspondente
-                            for (let option of cargaSemanal.options) {
+                            for (let option of cargaSemanalSelect.options) {
                                 if (option.value === valorFormatado) {
-                                    cargaSemanal.value = valorFormatado;
+                                    cargaSemanalSelect.value = valorFormatado;
                                     break;
                                 }
                             }
+                        } else if (e.target.value === '24:00:00') {
+                            // Para plantão 24h, sugerir carga semanal apropriada
+                            cargaSemanalSelect.value = '84:00:00'; // 24h * 7 dias
                         }
                     });
                 }
@@ -685,7 +945,7 @@
                 }
             }
 
-            // Cálculo automático da jornada de trabalho
+            // Cálculo automático da jornada de trabalho (CORRIGIDO)
             function setupJornadaCalculo() {
                 const entrada = document.getElementById('id_horario_entrada');
                 const saida = document.getElementById('id_horario_saida');
@@ -701,21 +961,68 @@
                         let entradaMinutos = entradaH * 60 + entradaM;
                         let saidaMinutos = saidaH * 60 + saidaM;
                         
-                        // Se saída for antes da entrada, assume que é no dia seguinte
-                        if (saidaMinutos < entradaMinutos) {
+                        // Verificar se é plantão 24h
+                        const cargaDiariaValue = cargaDiariaSelect ? cargaDiariaSelect.value : '';
+                        const isPlantao24h = cargaDiariaValue === '24:00:00';
+                        
+                        // Para plantão 24h, NÃO ajustamos automaticamente
+                        // Para outras cargas, ajusta se saída for antes da entrada
+                        if (!isPlantao24h && saidaMinutos < entradaMinutos) {
                             saidaMinutos += 24 * 60;
                         }
                         
                         const diferencaMinutos = saidaMinutos - entradaMinutos;
-                        const horas = Math.floor(diferencaMinutos / 60);
-                        const minutos = diferencaMinutos % 60;
                         
-                        const jornadaFormatada = `${horas}h ${minutos.toString().padStart(2, '0')}min`;
+                        // Formatação especial para plantão 24h
+                        let jornadaFormatada = '';
+                        if (isPlantao24h && diferencaMinutos < 0) {
+                            // Para plantão 24h com saída no dia seguinte
+                            const diferencaAjustada = diferencaMinutos + (24 * 60);
+                            const horas = Math.floor(diferencaAjustada / 60);
+                            const minutos = diferencaAjustada % 60;
+                            jornadaFormatada = `${horas}h ${minutos.toString().padStart(2, '0')}min (dia seguinte)`;
+                        } else if (isPlantao24h && diferencaMinutos === 0) {
+                            // Para plantão 24h com mesmo horário (ex: 06:00 às 06:00)
+                            jornadaFormatada = `24h 00min (plantão completo)`;
+                        } else {
+                            const horas = Math.floor(Math.abs(diferencaMinutos) / 60);
+                            const minutos = Math.abs(diferencaMinutos) % 60;
+                            jornadaFormatada = `${horas}h ${minutos.toString().padStart(2, '0')}min`;
+                        }
+                        
                         jornadaSpan.textContent = jornadaFormatada;
                         infoDiv.style.display = 'block';
                         
-                        // Validação: horário de saída deve ser após entrada
-                        if (saidaMinutos <= entradaMinutos) {
+                        // Validação específica para cada tipo
+                        entrada.classList.remove('is-invalid', 'is-valid', 'is-warning');
+                        saida.classList.remove('is-invalid', 'is-valid', 'is-warning');
+                        
+                        if (isPlantao24h) {
+                            // Plantão 24h - aceita qualquer horário, mas avisa se for muito diferente de 24h
+                            let diferencaParaValidacao = diferencaMinutos;
+                            if (diferencaMinutos < 0) {
+                                diferencaParaValidacao += 24 * 60;
+                            }
+                            
+                            // Validar que está entre 22h e 26h (com tolerância)
+                            if (diferencaParaValidacao < 1320 || diferencaParaValidacao > 1560) {
+                                // Se for positivo e menos de 22h, ou se for negativo (entrada > saída)
+                                entrada.classList.add('is-warning');
+                                saida.classList.add('is-warning');
+                            } else {
+                                entrada.classList.add('is-valid');
+                                saida.classList.add('is-valid');
+                            }
+                        } else if (cargaDiariaValue === '12:00:00') {
+                            // Plantão 12h - verificar se está próximo de 12h
+                            if (Math.abs(diferencaMinutos - 720) > 120) { // 2 horas de tolerância
+                                saida.classList.add('is-invalid');
+                                saida.classList.remove('is-valid');
+                            } else {
+                                saida.classList.add('is-valid');
+                                saida.classList.remove('is-invalid');
+                            }
+                        } else if (saidaMinutos <= entradaMinutos) {
                             saida.classList.add('is-invalid');
                             saida.classList.remove('is-valid');
                         } else {
@@ -724,6 +1031,8 @@
                         }
                     } else {
                         infoDiv.style.display = 'none';
+                        entrada.classList.remove('is-invalid', 'is-valid', 'is-warning');
+                        saida.classList.remove('is-invalid', 'is-valid', 'is-warning');
                     }
                 }
                 
@@ -733,12 +1042,23 @@
                     saida.addEventListener('change', calcularJornada);
                     saida.addEventListener('input', calcularJornada);
                 }
+                
+                // Atualizar também quando a carga horária mudar
+                if (cargaDiariaSelect) {
+                    cargaDiariaSelect.addEventListener('change', calcularJornada);
+                }
             }
 
             // Inicializar todas as funcionalidades
             setupCargaHoraria();
             setupCPFValidation();
             setupJornadaCalculo();
+            
+            // Configurar campos de plantão inicialmente
+            if (cargaDiariaSelect) {
+                updatePlantaoFields();
+                cargaDiariaSelect.addEventListener('change', updatePlantaoFields);
+            }
 
             // Event listener para telefone
             const telefoneField = document.getElementById('id_telefone');
@@ -746,7 +1066,7 @@
                 telefoneField.addEventListener('input', mascaraFone);
             }
 
-            // Validação do formulário antes do envio
+            // Validação do formulário antes do envio (CORRIGIDO)
             document.getElementById('cadastroForm').addEventListener('submit', function(e) {
                 const termoUso = document.getElementById('id_termo_uso');
                 if (!termoUso || !termoUso.checked) {
@@ -758,24 +1078,108 @@
                 // Validação de horários
                 const entrada = document.getElementById('id_horario_entrada');
                 const saida = document.getElementById('id_horario_saida');
+                const cargaDiariaValue = cargaDiariaSelect ? cargaDiariaSelect.value : '';
+                const isPlantao24h = cargaDiariaValue === '24:00:00';
                 
-                if (entrada.value && saida.value) {
-                    const entradaHora = entrada.value.split(':')[0];
-                    const entradaMinuto = entrada.value.split(':')[1];
-                    const saidaHora = saida.value.split(':')[0];
-                    const saidaMinuto = saida.value.split(':')[1];
-                    
-                    const entradaTotal = parseInt(entradaHora) * 60 + parseInt(entradaMinuto);
-                    const saidaTotal = parseInt(saidaHora) * 60 + parseInt(saidaMinuto);
-                    
-                    // Ajusta se for no dia seguinte
-                    const saidaAjustada = saidaTotal < entradaTotal ? saidaTotal + 1440 : saidaTotal;
-                    
-                    if (saidaAjustada <= entradaTotal) {
+                // Para plantão 24h, horários são opcionais
+                if (!isPlantao24h) {
+                    if (entrada.value && saida.value) {
+                        const entradaHora = entrada.value.split(':')[0];
+                        const entradaMinuto = entrada.value.split(':')[1];
+                        const saidaHora = saida.value.split(':')[0];
+                        const saidaMinuto = saida.value.split(':')[1];
+                        
+                        const entradaTotal = parseInt(entradaHora) * 60 + parseInt(entradaMinuto);
+                        const saidaTotal = parseInt(saidaHora) * 60 + parseInt(saidaMinuto);
+                        
+                        // Ajusta se for no dia seguinte
+                        const saidaAjustada = saidaTotal < entradaTotal ? saidaTotal + 1440 : saidaTotal;
+                        
+                        if (saidaAjustada <= entradaTotal) {
+                            e.preventDefault();
+                            alert('O horário de saída deve ser após o horário de entrada.');
+                            saida.focus();
+                            return false;
+                        }
+                    } else if (!entrada.value || !saida.value) {
                         e.preventDefault();
-                        alert('O horário de saída deve ser após o horário de entrada.');
-                        saida.focus();
+                        alert('Para esta carga horária, é necessário informar os horários de entrada e saída.');
                         return false;
+                    }
+                }
+                
+                // Validação especial para plantão 12h
+                if (cargaDiariaValue === '12:00:00') {
+                    if (entrada.value && saida.value) {
+                        const entradaHora = entrada.value.split(':')[0];
+                        const entradaMinuto = entrada.value.split(':')[1];
+                        const saidaHora = saida.value.split(':')[0];
+                        const saidaMinuto = saida.value.split(':')[1];
+                        
+                        const entradaTotal = parseInt(entradaHora) * 60 + parseInt(entradaMinuto);
+                        const saidaTotal = parseInt(saidaHora) * 60 + parseInt(saidaMinuto);
+                        
+                        const saidaAjustada = saidaTotal < entradaTotal ? saidaTotal + 1440 : saidaTotal;
+                        const diferencaMinutos = saidaAjustada - entradaTotal;
+                        
+                        // Verificar se está próximo de 12h (com tolerância de 2 horas)
+                        if (Math.abs(diferencaMinutos - 720) > 120) {
+                            const confirmar = confirm(
+                                `A jornada informada (${Math.floor(diferencaMinutos/60)}h ${diferencaMinutos%60}min) ` +
+                                `é diferente de 12 horas. Deseja continuar mesmo assim?`
+                            );
+                            if (!confirmar) {
+                                e.preventDefault();
+                                return false;
+                            }
+                        }
+                    }
+                }
+                
+                // Para plantão 24h, validar se informou ambos ou nenhum
+                if (isPlantao24h) {
+                    if ((entrada.value && !saida.value) || (!entrada.value && saida.value)) {
+                        const confirmar = confirm(
+                            'Para plantão 24h, é recomendado informar ambos os horários ou nenhum. ' +
+                            'Deseja continuar com apenas um horário informado?'
+                        );
+                        if (!confirmar) {
+                            e.preventDefault();
+                            return false;
+                        }
+                    }
+                    
+                    // Se informou ambos, validar que não é absurdo (>26h ou <22h)
+                    if (entrada.value && saida.value) {
+                        const entradaHora = entrada.value.split(':')[0];
+                        const entradaMinuto = entrada.value.split(':')[1];
+                        const saidaHora = saida.value.split(':')[0];
+                        const saidaMinuto = saida.value.split(':')[1];
+                        
+                        const entradaTotal = parseInt(entradaHora) * 60 + parseInt(entradaMinuto);
+                        const saidaTotal = parseInt(saidaHora) * 60 + parseInt(saidaMinuto);
+                        
+                        let diferencaMinutos = saidaTotal - entradaTotal;
+                        // Se saída for menor, pode ser no dia seguinte
+                        if (diferencaMinutos < 0) {
+                            diferencaMinutos += 1440; // Adiciona 24h
+                        }
+                        
+                        // Validar que está entre 22h e 26h (com tolerância)
+                        if (diferencaMinutos < 1320 || diferencaMinutos > 1560) {
+                            const horas = Math.floor(diferencaMinutos / 60);
+                            const minutos = diferencaMinutos % 60;
+                            
+                            const confirmar = confirm(
+                                `O período informado (${horas}h ${minutos}min) não é próximo de 24 horas. ` +
+                                `Para plantão 24h, o período deve ser de aproximadamente 24 horas. ` +
+                                `Deseja continuar mesmo assim?`
+                            );
+                            if (!confirmar) {
+                                e.preventDefault();
+                                return false;
+                            }
+                        }
                     }
                 }
                 

@@ -18,6 +18,8 @@
             --light-bg: #f8f9fa;
             --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             --hover-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+            --plantao-12h-color: #ff9800;
+            --plantao-24h-color: #4361ee;
         }
         
         body {
@@ -27,7 +29,7 @@
         }
         
         .container-fluid {
-            max-width: 90%;
+            max-width: 95%;
         }
         
         .card {
@@ -74,11 +76,6 @@
             background-color: rgba(67, 97, 238, 0.05);
         }
         
-        .progress {
-            height: 8px;
-            border-radius: 10px;
-        }
-        
         .chart-container {
             position: relative;
             height: 300px;
@@ -110,16 +107,6 @@
             transition: all 0.2s ease;
         }
         
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
-        }
-        
-        .table {
-            border-collapse: separate;
-            border-spacing: 0;
-        }
-        
         .table th {
             border-top: none;
             font-weight: 600;
@@ -139,24 +126,11 @@
             border-bottom: 1px solid #edf2f7;
         }
         
-        .list-group-item:last-child {
-            border-bottom: none;
-        }
-        
-        h1, h2, h3, h4, h5, h6 {
-            font-weight: 600;
-        }
-        
         .page-title {
             font-weight: 700;
             color: #1a202c;
         }
         
-        .text-muted {
-            color: #718096 !important;
-        }
-        
-        /* Custom colors for cards */
         .bg-primary-custom {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
         }
@@ -173,18 +147,32 @@
             background: linear-gradient(135deg, var(--warning-color), #b5179e) !important;
         }
         
-        .bg-danger-custom {
-            background: linear-gradient(135deg, var(--danger-color), #d00000) !important;
+        .plantao-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
         }
         
-        /* Badge styles */
+        .plantao-12h {
+            background-color: rgba(255, 152, 0, 0.1);
+            color: var(--plantao-12h-color);
+            border: 1px solid var(--plantao-12h-color);
+        }
+        
+        .plantao-24h {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--plantao-24h-color);
+            border: 1px solid var(--plantao-24h-color);
+        }
+        
         .badge {
             border-radius: 6px;
             font-weight: 500;
             padding: 0.35em 0.65em;
         }
         
-        /* Status indicators */
         .status-dot {
             width: 8px;
             height: 8px;
@@ -193,123 +181,205 @@
             margin-right: 6px;
         }
         
-        .status-on-time { background-color: #28a745; }
         .status-delayed { background-color: #ffc107; }
         .status-early { background-color: #fd7e14; }
         
-        /* Filter card styling */
-        .filter-card {
-            background: white;
-        }
-        
-        /* Pagination styles */
-        .pagination {
-            margin-bottom: 0;
-        }
-        
-        .page-link {
+        .pagination .page-link {
             border-radius: 8px;
             margin: 0 2px;
             border: 1px solid #e2e8f0;
             color: var(--primary-color);
         }
         
-        .page-link:hover {
+        .pagination .page-link:hover {
             background-color: var(--primary-color);
             border-color: var(--primary-color);
             color: white;
         }
         
-        .page-item.active .page-link {
+        .pagination .page-item.active .page-link {
             background-color: var(--primary-color);
             border-color: var(--primary-color);
         }
         
-        /* Responsive adjustments */
+        .plantao-info-card {
+            border-left: 4px solid var(--plantao-12h-color);
+            background: linear-gradient(135deg, #fff8e1, #ffecb3);
+        }
+        
+        .plantao-24h-info-card {
+            border-left: 4px solid var(--plantao-24h-color);
+            background: linear-gradient(135deg, #e8f4fd, #d0e7ff);
+        }
+        
         @media (max-width: 768px) {
-            .card-stat {
-                margin-bottom: 1rem;
+            .container-fluid {
+                max-width: 100%;
             }
-            
-            .stat-icon {
-                font-size: 2rem;
-            }
-            
             .btn {
                 width: 100%;
                 margin-bottom: 0.5rem;
             }
-            
-            .btn-group {
-                width: 100%;
-            }
-            
-            .pagination {
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-            
-            .page-link {
-                padding: 0.375rem 0.75rem;
-                font-size: 0.875rem;
-            }
         }
+        
+        .registro-dia-card {
+            border-left: 4px solid #4361ee;
+            margin-bottom: 1rem;
+            transition: all 0.2s ease;
+        }
+        
+        .registro-dia-card.incompleto {
+            border-left-color: var(--warning-color);
+            background-color: rgba(247, 37, 133, 0.02);
+        }
+        
+        .horas-dia-badge {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .table-sm-inside {
+            font-size: 0.9rem;
+        }
+        
+        .table-sm-inside td {
+            padding: 0.5rem;
+        }
+        
+        .btn-registro-manual:hover {
+            transform: scale(1.05);
+        }
+        
+        .dias-restantes-badge {
+            background-color: #e9ecef;
+            color: #495057;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        
+        .progress {
+            height: 10px;
+            border-radius: 5px;
+            background-color: #e9ecef;
+        }
+        
+        .progress-bar {
+            border-radius: 5px;
+        }
+        /* Adicione no seu bloco de estilos */
+.progresso-proporcional {
+    width: 100%;
+    height: 20px;
+    background-color: #e9ecef;
+    border-radius: 10px;
+    border: 1px solid #dee2e6;
+    position: relative;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.progresso-preenchimento {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.5s ease;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.progresso-credito {
+    background: linear-gradient(90deg, #28a745, #20c997);
+}
+
+.progresso-debito {
+    background: linear-gradient(90deg, #ffc107, #fd7e14);
+}
+
+.progresso-texto {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 10px;
+    color: #495057;
+    font-size: 12px;
+    font-weight: bold;
+    pointer-events: none;
+}
+
+.progresso-texto-branco {
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
     </style>
 </head>
 <body>
     <div class="container-fluid py-4">
         <!-- Cabeçalho -->
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
-            <div class="col-md-6">
+            <div>
                 <h1 class="page-title mb-1">
                     <i class="fas fa-chart-line me-2" style="color: var(--primary-color);"></i>
                     {% if request.user.is_superuser %}
-                        Relatório de Pontos - {{ profissional.nome }}
+                        Relatório de Pontos - {{ profissional.nome }} {{ profissional.sobrenome }}
                     {% else %}
                         Meu Relatório de Pontos
                     {% endif %}
                 </h1>
+                <div class="mt-2">
+                    {% if is_plantao_24h %}
+                    <span class="plantao-badge plantao-24h">
+                        <i class="fas fa-hospital me-1"></i> Plantão 24 Horas
+                    </span>
+                    {% elif is_plantao_12h %}
+                    <span class="plantao-badge plantao-12h">
+                        <i class="fas fa-clock me-1"></i> Plantão 12 Horas
+                    </span>
+                    {% endif %}
+                    <span class="dias-restantes-badge ms-2">
+                        <i class="far fa-calendar-alt me-1"></i> {{ data_inicio|date:"d/m/Y" }} - {{ data_fim|date:"d/m/Y" }}
+                    </span>
+                </div>
             </div>
-            <div class="d-flex flex-column justify-content-end flex-sm-row gap-2 w-100 w-md-auto">
-                <a href="{% url 'core:relatorio_profissional_pdf' profissional.id %}?{% if data_inicio %}data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}" 
-                   class="btn btn-danger d-flex align-items-center justify-content-center"
-                   target="_blank">
-                    <i class="fas fa-file-pdf me-2"></i> Gerar PDF
+            <div class="d-flex gap-2 mt-3 mt-md-0">
+                <a href="{% url 'core:relatorio_profissional_pdf' profissional.id %}?data_inicio={{ data_inicio_str }}&data_fim={{ data_fim_str }}" 
+                   class="btn btn-danger" target="_blank">
+                    <i class="fas fa-file-pdf me-2"></i> PDF
                 </a>
-                
                 {% if request.user.is_superuser %}
-                <a href="{% url 'core:dashboard' %}" class="btn btn-outline-secondary d-flex align-items-center justify-content-center">
+                <a href="{% url 'core:dashboard' %}" class="btn btn-outline-secondary">
                     <i class="fas fa-arrow-left me-2"></i> Voltar
                 </a>
                 {% else %}
-                <a href="{% url 'logout' %}" class="btn btn-outline-danger d-flex align-items-center justify-content-center">
+                <a href="{% url 'logout' %}" class="btn btn-outline-danger">
                     <i class="fas fa-sign-out-alt me-2"></i> Sair
                 </a>
                 {% endif %}
             </div>
         </div>
 
-        <!-- Filtros -->
-        <div class="card filter-card mb-4">
+        <!-- Filtros - CORRIGIDO: SÓ FILTRA QUANDO CLICAR NO BOTÃO -->
+        <div class="card mb-4">
             <div class="card-header bg-light">
-                <h5 class="mb-0 d-flex align-items-center">
-                    <i class="fas fa-filter me-2 text-primary"></i> Filtros do Relatório
-                </h5>
+                <h5 class="mb-0"><i class="fas fa-filter me-2 text-primary"></i> Filtros do Relatório</h5>
             </div>
             <div class="card-body">
-                <form method="get" class="row g-3">
+                <form method="get" class="row g-3" id="filtro-form">
                     <div class="col-md-5">
-                        <label for="data_inicio" class="form-label fw-semibold">Data Início</label>
-                        <input type="date" class="form-control" id="data_inicio" name="data_inicio" 
-                               value="{{ data_inicio }}">
+                        <label class="form-label fw-semibold">Data Início</label>
+                        <input type="date" class="form-control" name="data_inicio" value="{{ data_inicio_str }}">
                     </div>
                     <div class="col-md-5">
-                        <label for="data_fim" class="form-label fw-semibold">Data Fim</label>
-                        <input type="date" class="form-control" id="data_fim" name="data_fim" 
-                               value="{{ data_fim }}">
+                        <label class="form-label fw-semibold">Data Fim</label>
+                        <input type="date" class="form-control" name="data_fim" value="{{ data_fim_str }}">
                     </div>
                     <div class="col-md-2 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary w-100 d-flex align-items-center justify-content-center">
+                        <button type="submit" class="btn btn-primary w-100">
                             <i class="fas fa-search me-2"></i> Filtrar
                         </button>
                     </div>
@@ -319,97 +389,151 @@
 
         <!-- Informações do Profissional -->
         <div class="card mb-4">
-            <div class="card-header d-flex align-items-center" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
-                <h5 class="mb-0 text-white">
-                    <i class="fas fa-user me-2"></i> 
-                    {% if request.user.is_superuser %}
-                        Informações do Profissional
-                    {% else %}
-                        Minhas Informações
-                    {% endif %}
-                </h5>
+            <div class="card-header" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+                <h5 class="mb-0 text-white"><i class="fas fa-user me-2"></i> Informações do Profissional</h5>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <p class="d-flex align-items-center mb-3">
-                            <i class="fas fa-id-card me-2 text-primary"></i>
-                            <strong class="me-2">Nome:</strong> {{ profissional.nome }} {{ profissional.sobrenome }}
-                        </p>
-                        <p class="d-flex align-items-center mb-3">
-                            <i class="fas fa-fingerprint me-2 text-primary"></i>
-                            <strong class="me-2">CPF:</strong> {{ profissional.cpf }}
-                        </p>
-                        <p class="d-flex align-items-center mb-3">
-                            <i class="fas fa-briefcase me-2 text-primary"></i>
-                            <strong class="me-2">Profissão:</strong> {{ profissional.profissao|default:"Não informado" }}
-                        </p>
+                        <p><strong><i class="fas fa-id-card me-2 text-primary"></i>Nome:</strong> {{ profissional.nome }} {{ profissional.sobrenome }}</p>
+                        <p><strong><i class="fas fa-fingerprint me-2 text-primary"></i>CPF:</strong> {{ profissional.cpf }}</p>
+                        <p><strong><i class="fas fa-briefcase me-2 text-primary"></i>Profissão:</strong> {{ profissional.profissao|default:"Não informado" }}</p>
+                        {% if estabelecimento %}
+                        <p><strong><i class="fas fa-building me-2 text-primary"></i>Estabelecimento:</strong> {{ estabelecimento.nome }}</p>
+                        {% endif %}
                     </div>
                     <div class="col-md-6">
-                        <p class="d-flex align-items-center mb-3">
-                            <i class="fas fa-clock me-2 text-primary"></i>
-                            <strong class="me-2">Carga Horária Diária:</strong> 
+                        <p><strong><i class="fas fa-clock me-2 text-primary"></i>Carga Horária Diária:</strong> 
                             <span class="badge bg-primary ms-2">{{ carga_horaria_diaria }}</span>
                         </p>
-                        <p class="d-flex align-items-center mb-3">
-                            <i class="fas fa-calendar-week me-2 text-primary"></i>
-                            <strong class="me-2">Carga Horária Semanal:</strong> 
+                        <p><strong><i class="fas fa-calendar-week me-2 text-primary"></i>Carga Horária Semanal:</strong> 
                             <span class="badge bg-primary ms-2">{{ carga_horaria_semanal }}</span>
                         </p>
+                        <p><strong><i class="fas fa-calculator me-2 text-primary"></i>Horas Esperadas no Período:</strong> 
+                            <span class="badge bg-info ms-2">{{ banco_horas.horas_previstas }}</span>
+                        </p>
                         {% if profissional.horario_entrada and profissional.horario_saida %}
-                        <p class="d-flex align-items-center mb-3">
-                            <i class="fas fa-business-time me-2 text-primary"></i>
-                            <strong class="me-2">Horário de Trabalho:</strong> 
-                            <span class="badge bg-info ms-2">
-                                {{ profissional.horario_entrada|time:"H:i" }} às {{ profissional.horario_saida|time:"H:i" }}
-                            </span>
+                        <p><strong><i class="fas fa-business-time me-2 text-primary"></i>Horário de Trabalho:</strong> 
+                            <span class="badge bg-info ms-2">{{ profissional.horario_entrada|time:"H:i" }} às {{ profissional.horario_saida|time:"H:i" }}</span>
                         </p>
                         {% endif %}
-                        {% if profissional.tolerancia_minutos %}
-                        <p class="d-flex align-items-center mb-0">
-                            <i class="fas fa-user-clock me-2 text-primary"></i>
-                            <strong class="me-2">Tolerância:</strong> 
-                            <span class="badge bg-warning text-dark ms-2">{{ profissional.tolerancia_minutos }} minutos</span>
+                        <p><strong><i class="fas fa-user-clock me-2 text-primary"></i>Tolerância:</strong> 
+                            <span class="badge bg-warning text-dark ms-2">{{ tolerancia_minutos }} minutos</span>
                         </p>
-                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ✅ NOVA SEÇÃO: ESTATÍSTICAS DE TOLERÂNCIA -->
+        <!-- BANCO DE HORAS - BARRA DE PROGRESSO PROPORCIONAL CORRIGIDA -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-balance-scale me-2 text-primary"></i> Banco de Horas</h5>
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-4 text-center mb-3 mb-md-0">
+                        <div class="display-4 fw-bold" style="color: {% if banco_horas.saldo_minutos >= 0 %}#28a745{% else %}#ffc107{% endif %};">
+                            {{ banco_horas.saldo_formatado }}
+                        </div>
+                        <span class="badge bg-{% if banco_horas.saldo_minutos >= 0 %}success{% else %}warning{% endif %} bg-opacity-10 p-2 mt-2">
+                            <i class="fas {% if banco_horas.saldo_minutos >= 0 %}fa-plus-circle{% else %}fa-minus-circle{% endif %} me-1"></i>
+                            {{ banco_horas.status_texto }}
+                        </span>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="row">
+                            <div class="col-6 mb-2">
+                                <small class="text-muted d-block">Horas Trabalhadas</small>
+                                <strong class="fs-5">{{ banco_horas.horas_trabalhadas }}</strong>
+                                <small class="text-muted ms-1">({{ banco_horas.horas_trabalhadas_decimal }}h)</small>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <small class="text-muted d-block">Horas Previstas</small>
+                                <strong class="fs-5">{{ banco_horas.horas_previstas }}</strong>
+                                <small class="text-muted ms-1">({{ banco_horas.horas_previstas_decimal }}h)</small>
+                            </div>
+                            <div class="col-12 mt-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="fw-semibold">Progresso do Período</span>
+                                    <span class="badge bg-primary rounded-pill">{{ banco_horas.percentual_concluido }}%</span>
+                                </div>
+                                
+                                <!-- ### BARRA DE PROGRESSO PROPORCIONAL - CORRIGIDA ### -->
+                                <div style="width: 100%; height: 20px; background-color: #e9ecef; border-radius: 10px; margin: 10px 0; border: 1px solid #dee2e6; position: relative; overflow: hidden;">
+                                    <div style="width: {{ banco_horas.percentual_concluido }}%; 
+                                                height: 100%; 
+                                                background: {% if banco_horas.saldo_minutos >= 0 %}linear-gradient(90deg, #28a745, #20c997){% else %}linear-gradient(90deg, #ffc107, #fd7e14){% endif %};
+                                                border-radius: 10px;
+                                                transition: width 0.5s ease;
+                                                position: absolute;
+                                                top: 0;
+                                                left: 0;">
+                                    </div>
+                                    <!-- Indicador visual da porcentagem -->
+                                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; color: #495057; font-size: 12px; font-weight: bold; pointer-events: none;">
+                                        {% if banco_horas.percentual_concluido < 15 %}
+                                            {{ banco_horas.percentual_concluido }}%
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <!-- ### FIM DA BARRA PROPORCIONAL ### -->
+                                
+                                <!-- Barra de referência visual (opcional) -->
+                                <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 10px; color: #6c757d;">
+                                    <span>0%</span>
+                                    <span>25%</span>
+                                    <span>50%</span>
+                                    <span>75%</span>
+                                    <span>100%</span>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between mt-3">
+                                    <div>
+                                        <i class="fas fa-clock me-1" style="color: {% if banco_horas.saldo_minutos >= 0 %}#28a745{% else %}#ffc107{% endif %};"></i>
+                                        <span class="fw-bold {% if banco_horas.saldo_minutos >= 0 %}text-success{% else %}text-warning{% endif %}">
+                                            Saldo: {{ banco_horas.saldo_formatado }}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <i class="fas fa-calendar-alt me-1 text-muted"></i>
+                                        <span class="text-muted">
+                                            {{ dias_trabalhados }} de {{ dias_uteis }} dias
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+        <!-- Estatísticas de Atrasos -->
         {% if total_atrasos > 0 or total_saidas_antecipadas > 0 %}
         <div class="row mb-4">
             <div class="col-12">
                 <div class="card border-warning">
                     <div class="card-header bg-warning bg-opacity-10 border-warning">
-                        <h5 class="mb-0 d-flex align-items-center text-warning">
-                            <i class="fas fa-exclamation-triangle me-2"></i> Controle de Tolerância
-                        </h5>
+                        <h5 class="mb-0 text-warning"><i class="fas fa-exclamation-triangle me-2"></i> Controle de Tolerância</h5>
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-6 mb-3 mb-md-0">
-                                <div class="d-flex align-items-center">
-                                    <div class="status-dot status-delayed"></div>
-                                    <strong class="me-2">Total de Atrasos:</strong>
-                                    <span class="badge bg-warning text-dark">{{ total_atrasos }} minutos</span>
-                                    <small class="text-muted ms-2">({{ registros_com_atraso }} registros)</small>
-                                </div>
-                                {% if media_atrasos > 0 %}
-                                <small class="text-muted">Média: {{ media_atrasos|floatformat:1 }} min por dia com atraso</small>
-                                {% endif %}
+                            <div class="col-md-6">
+                                <p><span class="status-dot status-delayed"></span> <strong>Atrasos:</strong> 
+                                    <span class="badge bg-warning text-dark">{{ total_atrasos }} min</span>
+                                    <small class="text-muted ms-2">({{ registros_com_atraso }} registros, média {{ media_atrasos }} min)</small>
+                                </p>
                             </div>
                             <div class="col-md-6">
-                                <div class="d-flex align-items-center">
-                                    <div class="status-dot status-early"></div>
-                                    <strong class="me-2">Saídas Antecipadas:</strong>
-                                    <span class="badge bg-warning text-dark">{{ total_saidas_antecipadas }} minutos</span>
-                                    <small class="text-muted ms-2">({{ registros_com_saida_antecipada }} registros)</small>
-                                </div>
-                                {% if media_saidas_antecipadas > 0 %}
-                                <small class="text-muted">Média: {{ media_saidas_antecipadas|floatformat:1 }} min por saída antecipada</small>
-                                {% endif %}
+                                <p><span class="status-dot status-early"></span> <strong>Saídas Antecipadas:</strong> 
+                                    <span class="badge bg-warning text-dark">{{ total_saidas_antecipadas }} min</span>
+                                    <small class="text-muted ms-2">({{ registros_com_saida_antecipada }} registros, média {{ media_saidas_antecipadas }} min)</small>
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -418,91 +542,85 @@
         </div>
         {% endif %}
 
-        <!-- Estatísticas Principais -->
+        <!-- Cards de Estatísticas -->
         <div class="row mb-4">
             <div class="col-xl-3 col-md-6 mb-3">
                 <div class="card text-white bg-primary-custom card-stat h-100">
-                    <div class="card-body d-flex flex-column">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div>
-                                <h6 class="card-title opacity-75 mb-1">Total de Horas</h6>
-                                <h2 class="card-text fw-bold">{{ horas_trabalhadas }}</h2>
-                                <small class="opacity-75">{{ horas_trabalhadas_decimal|floatformat:1 }} horas</small>
-                            </div>
-                            <i class="fas fa-clock stat-icon"></i>
-                        </div>
+                    <div class="card-body">
+                        <h6 class="card-title opacity-75">Total de Horas</h6>
+                        <h2 class="card-text fw-bold">{{ horas_trabalhadas }}</h2>
+                        <small>{{ horas_trabalhadas_decimal }} horas</small>
                         {% if diferenca_horas_decimal != 0 %}
-                        <div class="mt-auto">
-                            <span class="badge {% if diferenca_horas_decimal > 0 %}bg-success{% else %}bg-light text-dark{% endif %} badge-horas">
-                                {% if diferenca_horas_decimal > 0 %}+{% endif %}{{ diferenca_horas_decimal|floatformat:1 }}h
+                        <div class="mt-2">
+                            <span class="badge bg-light text-dark">
+                                {% if diferenca_horas_decimal > 0 %}+{% endif %}{{ diferenca_horas_decimal }}h
                             </span>
-                            <small class="opacity-75">vs esperado</small>
+                            <small class="opacity-75"> vs esperado</small>
                         </div>
                         {% endif %}
                     </div>
                 </div>
             </div>
-            
             <div class="col-xl-3 col-md-6 mb-3">
                 <div class="card text-white bg-info-custom card-stat h-100">
-                    <div class="card-body d-flex flex-column">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h6 class="card-title opacity-75 mb-1">Média Diária</h6>
-                                <h2 class="card-text fw-bold">
-                                    {% if dias_trabalhados > 0 %}
-                                        {{ media_diaria|default:horas_trabalhadas_decimal|floatformat:2 }}h
-                                    {% else %}
-                                        0h
-                                    {% endif %}
-                                </h2>
-                                <small class="opacity-75">por dia trabalhado</small>
-                            </div>
-                            <i class="fas fa-chart-bar stat-icon"></i>
-                        </div>
+                    <div class="card-body">
+                        <h6 class="card-title opacity-75">Média Diária</h6>
+                        <h2 class="card-text fw-bold">{{ horas_trabalhadas_decimal|floatformat:1 }}h</h2>
+                        <small>por dia trabalhado</small>
                     </div>
                 </div>
             </div>
-            
             <div class="col-xl-3 col-md-6 mb-3">
                 <div class="card text-white bg-success-custom card-stat h-100">
-                    <div class="card-body d-flex flex-column">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h6 class="card-title opacity-75 mb-1">Registros</h6>
-                                <h2 class="card-text fw-bold">{{ total_registros }}</h2>
-                                <small class="opacity-75">{{ entradas }} entradas / {{ saidas }} saídas</small>
-                            </div>
-                            <i class="fas fa-list stat-icon"></i>
-                        </div>
+                    <div class="card-body">
+                        <h6 class="card-title opacity-75">Registros</h6>
+                        <h2 class="card-text fw-bold">{{ total_registros }}</h2>
+                        <small>{{ entradas }} entradas / {{ saidas }} saídas</small>
                     </div>
                 </div>
             </div>
-            
             <div class="col-xl-3 col-md-6 mb-3">
                 <div class="card text-white bg-warning-custom card-stat h-100">
-                    <div class="card-body d-flex flex-column">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h6 class="card-title opacity-75 mb-1">Dias Trabalhados</h6>
-                                <h2 class="card-text fw-bold">{{ dias_trabalhados }}</h2>
-                                <small class="opacity-75">de {{ dias_uteis }} dias úteis</small>
-                            </div>
-                            <i class="fas fa-calendar-check stat-icon"></i>
-                        </div>
+                    <div class="card-body">
+                        <h6 class="card-title opacity-75">Dias Trabalhados</h6>
+                        <h2 class="card-text fw-bold">{{ dias_trabalhados }}</h2>
+                        <small>de {{ dias_uteis }} dias</small>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Gráfico de Horas por Dia da Semana -->
+        <!-- Informação Plantão -->
+        {% if is_plantao_24h or is_plantao_12h %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card {% if is_plantao_24h %}plantao-24h-info-card{% else %}plantao-info-card{% endif %}">
+                    <div class="card-body">
+                        <div class="d-flex">
+                            <i class="fas {% if is_plantao_24h %}fa-hospital{% else %}fa-clock{% endif %} me-3" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <h5>{% if is_plantao_24h %}Plantão 24 Horas{% else %}Plantão 12 Horas{% endif %}</h5>
+                                <p class="mb-0 small">
+                                    {% if is_plantao_24h %}
+                                        Entrada e saída em dias diferentes. 24h × todos os dias do período.
+                                    {% else %}
+                                        Baseado em dias úteis. 12h × dias úteis.
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Gráfico e Resumo por Dia da Semana -->
         <div class="row mb-4">
             <div class="col-lg-8 mb-4 mb-lg-0">
                 <div class="card h-100">
                     <div class="card-header">
-                        <h5 class="mb-0 d-flex align-items-center">
-                            <i class="fas fa-chart-bar me-2 text-primary"></i> Horas Trabalhadas por Dia da Semana
-                        </h5>
+                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2 text-primary"></i> Horas por Dia da Semana</h5>
                     </div>
                     <div class="card-body">
                         <div class="chart-container">
@@ -514,22 +632,16 @@
             <div class="col-lg-4">
                 <div class="card h-100">
                     <div class="card-header">
-                        <h5 class="mb-0 d-flex align-items-center">
-                            <i class="fas fa-table me-2 text-primary"></i> Resumo por Dia
-                        </h5>
+                        <h5 class="mb-0"><i class="fas fa-table me-2 text-primary"></i> Resumo por Dia</h5>
                     </div>
                     <div class="card-body p-0">
                         <div class="list-group list-group-flush">
                             {% for dia in horas_por_dia %}
                             <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <span class="fw-medium">{{ dia.dia }}</span>
-                                <div class="d-flex align-items-center">
-                                    <span class="badge bg-primary rounded-pill me-2">
-                                        {{ dia.horas }}
-                                    </span>
-                                    <small class="text-muted">
-                                        {{ dia.registros }} reg.
-                                    </small>
+                                <span>{{ dia.dia }}</span>
+                                <div>
+                                    <span class="badge bg-primary rounded-pill me-2">{{ dia.horas }}</span>
+                                    <small class="text-muted">{{ dia.media }}h/dia</small>
                                 </div>
                             </div>
                             {% endfor %}
@@ -539,36 +651,97 @@
             </div>
         </div>
 
-        <!-- Lista de Registros com Paginação -->
+        <!-- DIAS INCOMPLETOS - DESTAQUE -->
+        {% if dias_incompletos and request.user.is_superuser %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-warning">
+                    <div class="card-header bg-warning bg-opacity-10">
+                        <h5 class="mb-0 text-warning"><i class="fas fa-exclamation-triangle me-2"></i> Dias com Registro Incompleto</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for grupo in registros_agrupados %}
+                                {% if grupo.incompleto %}
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                        <div>
+                                            <strong>{{ grupo.data|date:"d/m/Y" }}</strong>
+                                            <small class="text-muted d-block">{{ grupo.data|date:"l" }}</small>
+                                            <small>Entrada: 
+                                                {% for r in grupo.registros %}
+                                                    {% if r.tipo == 'ENTRADA' %}{{ r.horario|time:"H:i" }}{% endif %}
+                                                {% endfor %}
+                                            </small>
+                                        </div>
+                                        <button class="btn btn-sm btn-warning" onclick="abrirModalRegistroManual('{{ grupo.data|date:'Y-m-d' }}')">
+                                            <i class="fas fa-pen me-1"></i> Registrar Saída
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- REGISTROS AGRUPADOS POR DIA -->
+        {% if registros_agrupados %}
+        <div class="card mb-4">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-calendar-day me-2 text-primary"></i> Registros por Dia</h5>
+                <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTodosDias">
+                    <i class="fas fa-eye me-1"></i> Ver todos os dias
+                </button>
+            </div>
+            <div class="card-body">
+                <!-- ÚLTIMOS 5 DIAS -->
+                <h6 class="fw-bold mb-3"><i class="fas fa-clock me-2 text-primary"></i> Últimos 5 dias</h6>
+                {% for grupo in registros_agrupados|slice:":5" %}
+                    {% include "core/includes/registro_dia_card.html" with grupo=grupo %}
+                {% endfor %}
+                
+                <!-- DIAS ANTERIORES -->
+                {% if registros_agrupados|length > 5 %}
+                <div class="collapse mt-3" id="collapseTodosDias">
+                    <h6 class="fw-bold mb-3"><i class="fas fa-history me-2 text-primary"></i> Dias anteriores</h6>
+                    {% for grupo in registros_agrupados|slice:"5:" %}
+                        {% include "core/includes/registro_dia_card.html" with grupo=grupo %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- TODOS OS REGISTROS (TABELA PAGINADA) -->
         <div class="card">
             <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 d-flex align-items-center">
-                    <i class="fas fa-list-ol me-2 text-primary"></i> Registros de Ponto
-                    <span class="badge bg-secondary ms-2">{{ page_obj.paginator.count }}</span>
-                </h5>
-                <div class="text-muted small">
-                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
-                </div>
+                <h5 class="mb-0"><i class="fas fa-list-ol me-2 text-primary"></i> Todos os Registros</h5>
+                <span class="badge bg-secondary">{{ total_registros }} registros</span>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
-                        <thead class="table-light">
+                        <thead>
                             <tr>
-                                <th class="border-0">Data</th>
-                                <th class="border-0">Horário</th>
-                                <th class="border-0">Tipo</th>
-                                <th class="border-0">Status</th>
-                                <th class="border-0">Estabelecimento</th>
+                                <th>Data</th>
+                                <th>Horário</th>
+                                <th>Tipo</th>
+                                <th>Status</th>
+                                <th>Estabelecimento</th>
                                 {% if request.user.is_superuser %}
-                                <th class="border-0">Observações</th>
+                                <th>Observações</th>
                                 {% endif %}
                             </tr>
                         </thead>
                         <tbody>
                             {% for registro in page_obj %}
                             <tr>
-                                <td class="fw-medium">{{ registro.data|date:"d/m/Y" }}</td>
+                                <td>{{ registro.data|date:"d/m/Y" }}</td>
                                 <td>{{ registro.horario|time:"H:i" }}</td>
                                 <td>
                                     <span class="badge {% if registro.tipo == 'ENTRADA' %}bg-success{% else %}bg-danger{% endif %}">
@@ -577,31 +750,28 @@
                                 </td>
                                 <td>
                                     {% if registro.atraso_minutos > 0 %}
-                                        <span class="badge bg-warning text-dark" title="Atraso de {{ registro.atraso_minutos }} minutos">
-                                            <i class="fas fa-clock me-1"></i>Atraso: {{ registro.atraso_minutos }}min
-                                        </span>
+                                        <span class="badge bg-warning text-dark">Atraso: {{ registro.atraso_minutos }}min</span>
                                     {% elif registro.saida_antecipada_minutos > 0 %}
-                                        <span class="badge bg-warning text-dark" title="Saída antecipada em {{ registro.saida_antecipada_minutos }} minutos">
-                                            <i class="fas fa-sign-out-alt me-1"></i>Antec: {{ registro.saida_antecipada_minutos }}min
-                                        </span>
+                                        <span class="badge bg-warning text-dark">Antec: {{ registro.saida_antecipada_minutos }}min</span>
                                     {% else %}
-                                        <span class="badge bg-success">
-                                            <i class="fas fa-check me-1"></i>No horário
-                                        </span>
+                                        <span class="badge bg-success">OK</span>
                                     {% endif %}
                                 </td>
-                                <td>{{ registro.estabelecimento.nome }}</td>
+                                <td>{{ registro.estabelecimento.nome|truncatechars:30 }}</td>
                                 {% if request.user.is_superuser %}
                                 <td>
-                                    <small class="text-muted">{{ registro.observacoes|default:"-" }}</small>
+                                    {% if registro.ajuste_manual %}
+                                        <span class="badge bg-info">Manual</span>
+                                    {% endif %}
+                                    <small class="text-muted">{{ registro.observacoes|truncatechars:30|default:"-" }}</small>
                                 </td>
                                 {% endif %}
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="{% if request.user.is_superuser %}6{% else %}5{% endif %}" class="text-center py-5 text-muted">
+                                <td colspan="{% if request.user.is_superuser %}6{% else %}5{% endif %}" class="text-center py-5">
                                     <i class="fas fa-inbox fa-3x mb-3 opacity-50"></i><br>
-                                    Nenhum registro encontrado para o período selecionado.
+                                    Nenhum registro encontrado
                                 </td>
                             </tr>
                             {% endfor %}
@@ -611,66 +781,48 @@
                 
                 <!-- Paginação -->
                 {% if page_obj.paginator.num_pages > 1 %}
-                <div class="card-footer bg-light">
-                    <nav aria-label="Navegação de páginas">
+                <div class="card-footer">
+                    <nav>
                         <ul class="pagination justify-content-center mb-0">
                             {% if page_obj.has_previous %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?{% if data_inicio %}data_inicio={{ data_inicio }}&{% endif %}{% if data_fim %}data_fim={{ data_fim }}&{% endif %}page=1" aria-label="Primeira">
-                                        <i class="fas fa-angle-double-left"></i>
-                                    </a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" href="?{% if data_inicio %}data_inicio={{ data_inicio }}&{% endif %}{% if data_fim %}data_fim={{ data_fim }}&{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Anterior">
-                                        <i class="fas fa-angle-left"></i>
-                                    </a>
-                                </li>
-                            {% else %}
-                                <li class="page-item disabled">
-                                    <span class="page-link"><i class="fas fa-angle-double-left"></i></span>
-                                </li>
-                                <li class="page-item disabled">
-                                    <span class="page-link"><i class="fas fa-angle-left"></i></span>
-                                </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?data_inicio={{ data_inicio_str }}&data_fim={{ data_fim_str }}&page=1">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?data_inicio={{ data_inicio_str }}&data_fim={{ data_fim_str }}&page={{ page_obj.previous_page_number }}">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            </li>
                             {% endif %}
 
                             {% for num in page_obj.paginator.page_range %}
-                                {% if page_obj.number == num %}
-                                    <li class="page-item active">
-                                        <span class="page-link">{{ num }}</span>
-                                    </li>
+                                {% if num == page_obj.number %}
+                                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
                                 {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?{% if data_inicio %}data_inicio={{ data_inicio }}&{% endif %}{% if data_fim %}data_fim={{ data_fim }}&{% endif %}page={{ num }}">{{ num }}</a>
-                                    </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?data_inicio={{ data_inicio_str }}&data_fim={{ data_fim_str }}&page={{ num }}">{{ num }}</a>
+                                </li>
                                 {% endif %}
                             {% endfor %}
 
                             {% if page_obj.has_next %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?{% if data_inicio %}data_inicio={{ data_inicio }}&{% endif %}{% if data_fim %}data_fim={{ data_fim }}&{% endif %}page={{ page_obj.next_page_number }}" aria-label="Próxima">
-                                        <i class="fas fa-angle-right"></i>
-                                    </a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" href="?{% if data_inicio %}data_inicio={{ data_inicio }}&{% endif %}{% if data_fim %}data_fim={{ data_fim }}&{% endif %}page={{ page_obj.paginator.num_pages }}" aria-label="Última">
-                                        <i class="fas fa-angle-double-right"></i>
-                                    </a>
-                                </li>
-                            {% else %}
-                                <li class="page-item disabled">
-                                    <span class="page-link"><i class="fas fa-angle-right"></i></span>
-                                </li>
-                                <li class="page-item disabled">
-                                    <span class="page-link"><i class="fas fa-angle-double-right"></i></span>
-                                </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?data_inicio={{ data_inicio_str }}&data_fim={{ data_fim_str }}&page={{ page_obj.next_page_number }}">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?data_inicio={{ data_inicio_str }}&data_fim={{ data_fim_str }}&page={{ page_obj.paginator.num_pages }}">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            </li>
                             {% endif %}
                         </ul>
                     </nav>
-                    
-                    <!-- Informações da paginação -->
                     <div class="text-center mt-2 text-muted small">
-                        Mostrando {{ page_obj.start_index }} - {{ page_obj.end_index }} de {{ page_obj.paginator.count }} registros
+                        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
                     </div>
                 </div>
                 {% endif %}
@@ -678,115 +830,144 @@
         </div>
     </div>
 
-    <script>
-        // Gráfico de horas por dia da semana
-        const ctx = document.getElementById('horasDiaSemanaChart').getContext('2d');
-        const horasPorDiaData = {
-            labels: [{% for dia in horas_por_dia %}"{{ dia.dia }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
-            datasets: [{
-                label: 'Horas Trabalhadas',
-                data: [{% for dia in horas_por_dia %}{{ dia.horas_decimal|floatformat:2 }}{% if not forloop.last %}, {% endif %}{% endfor %}],
-                backgroundColor: [
-                    'rgba(67, 97, 238, 0.7)', 
-                    'rgba(76, 201, 240, 0.7)', 
-                    'rgba(72, 149, 239, 0.7)', 
-                    'rgba(247, 37, 133, 0.7)', 
-                    'rgba(106, 76, 235, 0.7)', 
-                    'rgba(245, 101, 101, 0.7)', 
-                    'rgba(120, 119, 116, 0.7)'
-                ],
-                borderColor: [
-                    '#4361ee', 
-                    '#4cc9f0', 
-                    '#4895ef', 
-                    '#f72585', 
-                    '#6a4ceb', 
-                    '#f56565', 
-                    '#787774'
-                ],
-                borderWidth: 2,
-                borderRadius: 6,
-                borderSkipped: false,
-            }]
-        };
+    <!-- MODAL PARA REGISTRO MANUAL -->
+    {% if request.user.is_superuser %}
+    <div class="modal fade" id="modalRegistroManual" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title text-dark">
+                        <i class="fas fa-pen-fancy me-2"></i> Registro Manual de Ponto
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post" action="{% url 'registro_manual_saida' %}" id="formRegistroManual">
+                    {% csrf_token %}
+                    <input type="hidden" name="profissional_id" value="{{ profissional.id }}">
+                    <input type="hidden" name="data" id="manual_data">
+                    <input type="hidden" name="horario" id="horario">
+                    
+                    <div class="modal-body">
+                        <div class="text-center mb-4">
+                            <span class="badge bg-warning text-dark p-3" style="font-size: 1.1rem;">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                REGISTRO INCOMPLETO DETECTADO
+                            </span>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Profissional</label>
+                                <div class="form-control bg-light" readonly>
+                                    <i class="fas fa-user me-2 text-primary"></i> {{ profissional.nome }} {{ profissional.sobrenome }}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Data do registro</label>
+                                <div class="form-control bg-light" readonly id="manual_data_display"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-clock me-2 text-primary"></i>Horário da saída
+                                </label>
+                                <input type="time" class="form-control" id="horario_input" name="horario" value="18:00">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-gavel me-2 text-primary"></i>Justificativa
+                                </label>
+                                <select class="form-select" id="justificativa" name="justificativa">
+                                    <option value="">Selecione...</option>
+                                    {% for codigo, descricao in justificativas %}
+                                    <option value="{{ codigo }}">{{ descricao }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-comment me-2 text-primary"></i>Observações
+                            </label>
+                            <textarea class="form-control" name="observacoes" rows="2" placeholder="Informações complementares..."></textarea>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Este registro será marcado como:</strong>
+                            <span class="badge bg-warning text-dark ms-2">MANUAL</span>
+                            <span class="badge bg-danger ms-2">RETROATIVO</span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i> Cancelar
+                        </button>
+                        <button type="button" class="btn btn-warning" onclick="alert('Funcionalidade em desenvolvimento. Layout apenas para visualização.');">
+                            <i class="fas fa-save me-2"></i> Registrar Saída Manual
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-        const horasDiaSemanaChart = new Chart(ctx, {
+    <script>
+        function abrirModalRegistroManual(data) {
+            // Formatar data
+            const partes = data.split('-');
+            const dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
+            
+            // Preencher campos
+            document.getElementById('manual_data').value = data;
+            document.getElementById('manual_data_display').innerHTML = 
+                `<strong>${dataFormatada}</strong>`;
+            
+            // Abrir modal
+            new bootstrap.Modal(document.getElementById('modalRegistroManual')).show();
+        }
+    </script>
+    {% endif %}
+
+    <script>
+        // Gráfico de horas
+        {% if horas_por_dia %}
+        const ctx = document.getElementById('horasDiaSemanaChart').getContext('2d');
+        const dias = [{% for dia in horas_por_dia %}"{{ dia.dia }}",{% endfor %}];
+        const valores = [{% for dia in horas_por_dia %}{{ dia.horas_decimal|floatformat:2 }},{% endfor %}];
+        
+        new Chart(ctx, {
             type: 'bar',
-            data: horasPorDiaData,
+            data: {
+                labels: dias,
+                datasets: [{
+                    label: 'Horas Trabalhadas',
+                    data: valores,
+                    backgroundColor: 'rgba(67, 97, 238, 0.7)',
+                    borderColor: '#4361ee',
+                    borderWidth: 2,
+                }]
+            },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                        titleFont: {
-                            size: 14
-                        },
-                        bodyFont: {
-                            size: 13
-                        },
-                        padding: 10,
-                        cornerRadius: 8,
-                        callbacks: {
-                            label: function(context) {
-                                return `Horas: ${context.parsed.y.toFixed(2)}`;
-                            }
-                        }
-                    }
+                    legend: { display: false }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.05)'
-                        },
-                        title: {
-                            display: true,
-                            text: 'Horas',
-                            color: '#4a5568',
-                            font: {
-                                weight: '600'
-                            }
-                        },
-                        ticks: {
-                            color: '#718096'
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        },
-                        title: {
-                            display: true,
-                            text: 'Dia da Semana',
-                            color: '#4a5568',
-                            font: {
-                                weight: '600'
-                            }
-                        },
-                        ticks: {
-                            color: '#718096'
-                        }
+                        title: { display: true, text: 'Horas' }
                     }
                 }
             }
         });
-
-        // Auto-submit form quando datas mudarem (opcional)
-        document.getElementById('data_inicio').addEventListener('change', function() {
-            if(this.value && document.getElementById('data_fim').value) {
-                this.form.submit();
-            }
-        });
-
-        document.getElementById('data_fim').addEventListener('change', function() {
-            if(this.value && document.getElementById('data_inicio').value) {
-                this.form.submit();
-            }
-        });
+        {% endif %}
     </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

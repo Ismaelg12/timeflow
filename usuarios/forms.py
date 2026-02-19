@@ -14,39 +14,49 @@ class ProfissionalForm(forms.ModelForm):
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
     )
     
-    # ✅ CAMPOS DE CARGA HORÁRIA
+    # ✅ CAMPOS DE CARGA HORÁRIA - ATUALIZADO COM 12h E 24h
     CARGA_HORARIA_DIARIA_CHOICES = [
         ('', 'Selecione a carga horária diária'),
+        ('05:00:00', '5 horas/dia'),
         ('06:00:00', '6 horas/dia'),
         ('07:00:00', '7 horas/dia'), 
         ('08:00:00', '8 horas/dia'),
         ('09:00:00', '9 horas/dia'),
         ('10:00:00', '10 horas/dia'),
-        ('12:00:00', '12 horas/dia'),
+        ('11:00:00', '11 horas/dia'),
+        ('12:00:00', '12 horas/dia (Plantão 12h)'),  # ATUALIZADO
+        ('24:00:00', '24 horas/dia (Plantão 24h)'),  # NOVO
     ]
     
     CARGA_HORARIA_SEMANAL_CHOICES = [
         ('', 'Selecione a carga horária semanal'),
+        ('20:00:00', '20 horas/semana'),
+        ('25:00:00', '25 horas/semana'),
         ('30:00:00', '30 horas/semana'),
         ('35:00:00', '35 horas/semana'),
         ('36:00:00', '36 horas/semana'),
         ('40:00:00', '40 horas/semana'),
         ('44:00:00', '44 horas/semana'),
         ('45:00:00', '45 horas/semana'),
+        ('48:00:00', '48 horas/semana'),  # NOVO para 12h x 4 dias
         ('50:00:00', '50 horas/semana'),
         ('60:00:00', '60 horas/semana'),
+        ('72:00:00', '72 horas/semana'),  # NOVO para 12h x 6 dias
+        ('84:00:00', '84 horas/semana'),  # NOVO para 12h x 7 dias
     ]
     
     carga_horaria_diaria = forms.ChoiceField(
         choices=CARGA_HORARIA_DIARIA_CHOICES,
         required=False,
-        widget=forms.Select(attrs={'class': 'form-control form-select'})
+        widget=forms.Select(attrs={'class': 'form-control form-select'}),
+        help_text="Para plantões, selecione 12h ou 24h"
     )
     
     carga_horaria_semanal = forms.ChoiceField(
         choices=CARGA_HORARIA_SEMANAL_CHOICES,
         required=False,
-        widget=forms.Select(attrs={'class': 'form-control form-select'})
+        widget=forms.Select(attrs={'class': 'form-control form-select'}),
+        help_text="Carga horária semanal esperada"
     )
     
     # ✅ CAMPOS PARA HORÁRIOS E TOLERÂNCIA
@@ -57,7 +67,7 @@ class ProfissionalForm(forms.ModelForm):
             'type': 'time',
             'placeholder': 'HH:MM'
         }),
-        help_text="Horário de entrada esperado"
+        help_text="Horário de entrada esperado (opcional para plantão 24h)"
     )
     
     horario_saida = forms.TimeField(
@@ -67,7 +77,7 @@ class ProfissionalForm(forms.ModelForm):
             'type': 'time', 
             'placeholder': 'HH:MM'
         }),
-        help_text="Horário de saída esperado"
+        help_text="Horário de saída esperado (opcional para plantão 24h)"
     )
     
     TOLERANCIA_CHOICES = [
@@ -78,6 +88,7 @@ class ProfissionalForm(forms.ModelForm):
         (15, '15 minutos'),
         (20, '20 minutos'),
         (30, '30 minutos'),
+        (60, '60 minutos (apenas plantões)'),  # NOVO
     ]
     
     tolerancia_minutos = forms.ChoiceField(
@@ -122,9 +133,10 @@ class ProfissionalForm(forms.ModelForm):
             }),
         }
         help_texts = {
-            'horario_entrada': 'Horário padrão de entrada',
-            'horario_saida': 'Horário padrão de saída',
+            'horario_entrada': 'Horário padrão de entrada (opcional para plantão 24h)',
+            'horario_saida': 'Horário padrão de saída (opcional para plantão 24h)',
             'tolerancia_minutos': 'Tolerância permitida para atrasos/saídas antecipadas',
+            'carga_horaria_diaria': 'Selecione 12h para plantão 12h ou 24h para plantão 24h',
         }
     
     def __init__(self, *args, **kwargs):
@@ -209,19 +221,58 @@ class ProfissionalForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         
-        # VALIDAÇÃO: Verificar se horário de saída é depois do horário de entrada
+        carga_diaria_str = cleaned_data.get('carga_horaria_diaria')
         horario_entrada = cleaned_data.get('horario_entrada')
         horario_saida = cleaned_data.get('horario_saida')
+        tolerancia = cleaned_data.get('tolerancia_minutos')
         
-        if horario_entrada and horario_saida:
-            if horario_saida <= horario_entrada:
-                raise forms.ValidationError({
-                    'horario_saida': 'O horário de saída deve ser após o horário de entrada.'
-                })
+        # ✅ VALIDAÇÃO PARA PLANTÃO 24h - CORRIGIDO
+        if carga_diaria_str == '24:00:00':
+            # Plantão 24h - não é necessário ter horário fixo
+            # Mas avisa se foi preenchido
+            if horario_entrada or horario_saida:
+                # CORREÇÃO: Usando mensagem de warning em vez de error
+                self.add_warning(
+                    'horario_entrada',
+                    'Plantão 24h geralmente não tem horário fixo. Os horários informados serão usados apenas como referência.'
+                )
+            
+            # Para plantão 24h, tolerância maior pode ser aceitável
+            if tolerancia and int(tolerancia) > 60:
+                self.add_error(
+                    'tolerancia_minutos',
+                    'Para plantão 24h, a tolerância máxima recomendada é 60 minutos.'
+                )
         
-        # VALIDAÇÃO: Verificar consistência entre carga horária e horários
-        carga_diaria_str = cleaned_data.get('carga_horaria_diaria')
-        if carga_diaria_str and horario_entrada and horario_saida:
+        # ✅ VALIDAÇÃO PARA PLANTÃO 12h
+        elif carga_diaria_str == '12:00:00':
+            # Plantão 12h - horários são importantes
+            if not horario_entrada or not horario_saida:
+                self.add_error(
+                    'horario_entrada',
+                    'Para plantão 12h, é recomendado informar os horários de entrada e saída.'
+                )
+            
+            if horario_entrada and horario_saida:
+                entrada_dt = datetime.combine(datetime.min, horario_entrada)
+                saida_dt = datetime.combine(datetime.min, horario_saida)
+                
+                # Se saída for antes da entrada, assumir que é no dia seguinte
+                if saida_dt < entrada_dt:
+                    saida_dt += timedelta(days=1)
+                
+                diferenca_horas = (saida_dt - entrada_dt).total_seconds() / 3600
+                
+                # Verificar se o período corresponde a aproximadamente 12h
+                if abs(diferenca_horas - 12) > 2:  # 2 horas de tolerância
+                    self.add_warning(  # Mudado para warning em vez de error
+                        'carga_horaria_diaria',
+                        f'Período entre entrada e saída ({diferenca_horas:.1f}h) diferente de 12h. '
+                        f'Confirme se realmente é plantão 12h.'
+                    )
+        
+        # ✅ VALIDAÇÃO PARA OUTRAS CARGAS HORÁRIAS
+        elif carga_diaria_str and horario_entrada and horario_saida:
             try:
                 # Calcular diferença entre horários
                 entrada_dt = datetime.combine(datetime.min, horario_entrada)
@@ -239,7 +290,7 @@ class ProfissionalForm(forms.ModelForm):
                 
                 # Verificar se há grande discrepância
                 if abs(diferenca_horas - carga_horas) > 2:  # 2 horas de tolerância
-                    self.add_error(
+                    self.add_warning(
                         'carga_horaria_diaria',
                         f'Atenção: A carga horária selecionada ({carga_horas}h) é diferente '
                         f'do período entre entrada e saída ({diferenca_horas:.1f}h).'
@@ -248,7 +299,29 @@ class ProfissionalForm(forms.ModelForm):
             except (ValueError, AttributeError):
                 pass  # Ignora erros de conversão
         
+        # ✅ VALIDAÇÃO: Verificar se horário de saída é depois do horário de entrada
+        # CORREÇÃO: Esta validação NÃO deve bloquear plantão 24h com horários iguais
+        if horario_entrada and horario_saida:
+            # Plantão 24h pode ter horários iguais (06:00 às 06:00)
+            if carga_diaria_str != '24:00:00' and horario_saida <= horario_entrada:
+                self.add_error(  # CORREÇÃO: Dois argumentos, não um dicionário
+                    'horario_saida',
+                    'O horário de saída deve ser após o horário de entrada.'
+                )
+        
         return cleaned_data
+    
+    def add_warning(self, field, message):
+        """Adiciona uma mensagem de aviso sem invalidar o formulário"""
+        # Esta é uma implementação customizada que não invalida o formulário
+        # Apenas armazena as mensagens para exibição
+        if not hasattr(self, '_warnings'):
+            self._warnings = {}
+        
+        if field not in self._warnings:
+            self._warnings[field] = []
+        
+        self._warnings[field].append(message)
     
     def save(self, commit=True):
         instance = super().save(commit=False)
@@ -281,9 +354,16 @@ class ProfissionalForm(forms.ModelForm):
             try:
                 instance.tolerancia_minutos = int(tolerancia_str)
             except (ValueError, TypeError):
-                instance.tolerancia_minutos = 10  # Valor padrão
+                # Valores padrão baseados na carga horária
+                if instance.carga_horaria_diaria and instance.carga_horaria_diaria.total_seconds() >= 43200:  # 12h ou mais
+                    instance.tolerancia_minutos = 30  # Valor maior para plantões
+                else:
+                    instance.tolerancia_minutos = 10  # Valor padrão
         else:
-            instance.tolerancia_minutos = 10  # Valor padrão
+            if instance.carga_horaria_diaria and instance.carga_horaria_diaria.total_seconds() >= 43200:  # 12h ou mais
+                instance.tolerancia_minutos = 30
+            else:
+                instance.tolerancia_minutos = 10
         
         # Os campos horario_entrada e horario_saida já são TimeField no modelo
         
@@ -311,39 +391,49 @@ class AreaAtuacaoForm(forms.ModelForm):
 class ProfissionalEdicaoForm(forms.ModelForm):
     """Formulário para EDITAR profissional (sem termo_uso)"""
     
-    # ✅ CAMPOS DE CARGA HORÁRIA
+    # ✅ CAMPOS DE CARGA HORÁRIA - ATUALIZADO COM 12h E 24h
     CARGA_HORARIA_DIARIA_CHOICES = [
         ('', 'Selecione a carga horária diária'),
+        ('05:00:00', '5 horas/dia'),
         ('06:00:00', '6 horas/dia'),
         ('07:00:00', '7 horas/dia'), 
         ('08:00:00', '8 horas/dia'),
         ('09:00:00', '9 horas/dia'),
         ('10:00:00', '10 horas/dia'),
-        ('12:00:00', '12 horas/dia'),
+        ('11:00:00', '11 horas/dia'),
+        ('12:00:00', '12 horas/dia (Plantão 12h)'),  # ATUALIZADO
+        ('24:00:00', '24 horas/dia (Plantão 24h)'),  # NOVO
     ]
     
     CARGA_HORARIA_SEMANAL_CHOICES = [
         ('', 'Selecione a carga horária semanal'),
+        ('20:00:00', '20 horas/semana'),
+        ('25:00:00', '25 horas/semana'),
         ('30:00:00', '30 horas/semana'),
         ('35:00:00', '35 horas/semana'),
         ('36:00:00', '36 horas/semana'),
         ('40:00:00', '40 horas/semana'),
         ('44:00:00', '44 horas/semana'),
         ('45:00:00', '45 horas/semana'),
+        ('48:00:00', '48 horas/semana'),  # NOVO para 12h x 4 dias
         ('50:00:00', '50 horas/semana'),
         ('60:00:00', '60 horas/semana'),
+        ('72:00:00', '72 horas/semana'),  # NOVO para 12h x 6 dias
+        ('84:00:00', '84 horas/semana'),  # NOVO para 12h x 7 dias
     ]
     
     carga_horaria_diaria = forms.ChoiceField(
         choices=CARGA_HORARIA_DIARIA_CHOICES,
         required=False,
-        widget=forms.Select(attrs={'class': 'form-control form-select'})
+        widget=forms.Select(attrs={'class': 'form-control form-select'}),
+        help_text="Para plantões, selecione 12h ou 24h"
     )
     
     carga_horaria_semanal = forms.ChoiceField(
         choices=CARGA_HORARIA_SEMANAL_CHOICES,
         required=False,
-        widget=forms.Select(attrs={'class': 'form-control form-select'})
+        widget=forms.Select(attrs={'class': 'form-control form-select'}),
+        help_text="Carga horária semanal esperada"
     )
     
     # ✅ CAMPOS PARA HORÁRIOS E TOLERÂNCIA
@@ -354,7 +444,7 @@ class ProfissionalEdicaoForm(forms.ModelForm):
             'type': 'time',
             'placeholder': 'HH:MM'
         }),
-        help_text="Horário de entrada esperado"
+        help_text="Horário de entrada esperado (opcional para plantão 24h)"
     )
     
     horario_saida = forms.TimeField(
@@ -364,7 +454,7 @@ class ProfissionalEdicaoForm(forms.ModelForm):
             'type': 'time', 
             'placeholder': 'HH:MM'
         }),
-        help_text="Horário de saída esperado"
+        help_text="Horário de saída esperado (opcional para plantão 24h)"
     )
     
     TOLERANCIA_CHOICES = [
@@ -375,6 +465,7 @@ class ProfissionalEdicaoForm(forms.ModelForm):
         (15, '15 minutos'),
         (20, '20 minutos'),
         (30, '30 minutos'),
+        (60, '60 minutos (apenas plantões)'),  # NOVO
     ]
     
     tolerancia_minutos = forms.ChoiceField(
@@ -487,6 +578,68 @@ class ProfissionalEdicaoForm(forms.ModelForm):
         
         return cpf
     
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        carga_diaria_str = cleaned_data.get('carga_horaria_diaria')
+        horario_entrada = cleaned_data.get('horario_entrada')
+        horario_saida = cleaned_data.get('horario_saida')
+        tolerancia = cleaned_data.get('tolerancia_minutos')
+        
+        # ✅ VALIDAÇÃO PARA PLANTÃO 24h
+        if carga_diaria_str == '24:00:00':
+            # Plantão 24h - não é necessário ter horário fixo
+            # Mas avisa se foi preenchido
+            if horario_entrada or horario_saida:
+                self.add_error(
+                    'horario_entrada',
+                    'Plantão 24h geralmente não tem horário fixo. Os horários informados serão usados apenas como referência.'
+                )
+            
+            # Para plantão 24h, tolerância maior pode ser aceitável
+            if tolerancia and int(tolerancia) > 60:
+                self.add_error(
+                    'tolerancia_minutos',
+                    'Para plantão 24h, a tolerância máxima recomendada é 60 minutos.'
+                )
+        
+        # ✅ VALIDAÇÃO PARA PLANTÃO 12h
+        elif carga_diaria_str == '12:00:00':
+            # Plantão 12h - horários são importantes
+            if not horario_entrada or not horario_saida:
+                self.add_error(
+                    'horario_entrada',
+                    'Para plantão 12h, é recomendado informar os horários de entrada e saída.'
+                )
+            
+            if horario_entrada and horario_saida:
+                entrada_dt = datetime.combine(datetime.min, horario_entrada)
+                saida_dt = datetime.combine(datetime.min, horario_saida)
+                
+                # Se saída for antes da entrada, assumir que é no dia seguinte
+                if saida_dt < entrada_dt:
+                    saida_dt += timedelta(days=1)
+                
+                diferenca_horas = (saida_dt - entrada_dt).total_seconds() / 3600
+                
+                # Verificar se o período corresponde a aproximadamente 12h
+                if abs(diferenca_horas - 12) > 2:  # 2 horas de tolerância
+                    self.add_error(
+                        'carga_horaria_diaria',
+                        f'Período entre entrada e saída ({diferenca_horas:.1f}h) diferente de 12h. '
+                        f'Confirme se realmente é plantão 12h.'
+                    )
+        
+        # ✅ VALIDAÇÃO: Verificar se horário de saída é depois do horário de entrada
+        if horario_entrada and horario_saida:
+            if horario_saida <= horario_entrada:
+                self.add_error(
+                    'horario_saida',
+                    'O horário de saída deve ser após o horário de entrada.'
+                )
+        
+        return cleaned_data
+    
     def save(self, commit=True):
         instance = super().save(commit=False)
         
@@ -518,9 +671,16 @@ class ProfissionalEdicaoForm(forms.ModelForm):
             try:
                 instance.tolerancia_minutos = int(tolerancia_str)
             except (ValueError, TypeError):
-                instance.tolerancia_minutos = 10  # Valor padrão
+                # Valores padrão baseados na carga horária
+                if instance.carga_horaria_diaria and instance.carga_horaria_diaria.total_seconds() >= 43200:  # 12h ou mais
+                    instance.tolerancia_minutos = 30  # Valor maior para plantões
+                else:
+                    instance.tolerancia_minutos = 10  # Valor padrão
         else:
-            instance.tolerancia_minutos = 10  # Valor padrão
+            if instance.carga_horaria_diaria and instance.carga_horaria_diaria.total_seconds() >= 43200:  # 12h ou mais
+                instance.tolerancia_minutos = 30
+            else:
+                instance.tolerancia_minutos = 10
         
         if commit:
             instance.save()

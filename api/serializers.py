@@ -10,6 +10,10 @@ class ProfissionalSerializer(serializers.ModelSerializer):
     estabelecimento_cnpj = serializers.CharField(source='estabelecimento.cnpj', read_only=True)
     profissao_nome = serializers.CharField(source='profissao.profissao', read_only=True)
     nome_completo = serializers.SerializerMethodField()
+        # Horários cadastrados do profissional
+    hora_entrada_cadastrada = serializers.SerializerMethodField()
+    hora_saida_cadastrada = serializers.SerializerMethodField()
+    
     
     class Meta:
         model = Profissional
@@ -18,6 +22,7 @@ class ProfissionalSerializer(serializers.ModelSerializer):
             'profissao', 'profissao_nome', 'estabelecimento', 
             'estabelecimento_nome', 'estabelecimento_cnpj',
             'horario_entrada', 'horario_saida',
+            'hora_entrada_cadastrada', 'hora_saida_cadastrada',
             'tolerancia_minutos', 'ativo'
         ]
     

@@ -4,7 +4,7 @@ from municipio.models import Municipio
 class Estabelecimento(models.Model):
     nome = models.CharField(max_length=200)
     endereco = models.TextField()
-    cnpj = models.CharField(max_length=18, unique=True)
+    cnpj = models.CharField(max_length=18, null=False, blank=False)
     municipio = models.ForeignKey(Municipio, on_delete=models.CASCADE)
     latitude = models.FloatField()
     longitude = models.FloatField()

@@ -135,24 +135,18 @@ def verificar_cpf_mobile(request):
         )
     
     try:
+        # Formatar como está no banco
         cpf_formatado = f"{cpf[:3]}.{cpf[3:6]}.{cpf[6:9]}-{cpf[9:]}"
         
+        logger.info(f"Buscando CPF: {cpf_formatado}")
+        
         profissional = Profissional.objects.filter(
-            Q(cpf=cpf) | Q(cpf=cpf_formatado),
+            cpf=cpf_formatado,
             ativo=True
         ).first()
         
         if not profissional:
-            prof_inativo = Profissional.objects.filter(
-                Q(cpf=cpf) | Q(cpf=cpf_formatado)
-            ).first()
-            
-            if prof_inativo:
-                return Response({
-                    'sucesso': False,
-                    'erro': f'Profissional inativo'
-                }, status=status.HTTP_404_NOT_FOUND)
-            
+            logger.warning(f"CPF não encontrado: {cpf_formatado}")
             return Response({
                 'sucesso': False,
                 'erro': 'CPF não encontrado ou profissional inativo'
@@ -167,15 +161,72 @@ def verificar_cpf_mobile(request):
         hoje = timezone.now().date()
         estabelecimento = profissional.estabelecimento
         
-        from ponto.utils import determinar_proximo_tipo
-        proximo_tipo = determinar_proximo_tipo(profissional, estabelecimento, hoje)
-        
+        # Lógica para determinar próximo tipo
         registros_hoje = RegistroPonto.objects.filter(
             profissional=profissional,
             data=hoje
-        ).count()
+        ).order_by('horario')
         
-        return Response({
+        if registros_hoje.count() == 0:
+            proximo_tipo = 'ENTRADA'
+        else:
+            ultimo_registro = registros_hoje.last()
+            proximo_tipo = 'SAIDA' if ultimo_registro.tipo == 'ENTRADA' else 'ENTRADA'
+        
+        # Garantir que os valores sejam serializáveis
+        latitude_estab = estabelecimento.latitude
+        longitude_estab = estabelecimento.longitude
+        raio_permitido = estabelecimento.raio_permitido
+        
+        # Converter para float se necessário
+        try:
+            if latitude_estab is not None:
+                latitude_estab = float(latitude_estab)
+            else:
+                latitude_estab = -2.916764
+        except (TypeError, ValueError):
+            latitude_estab = -2.916764
+            
+        try:
+            if longitude_estab is not None:
+                longitude_estab = float(longitude_estab)
+            else:
+                longitude_estab = -41.7486655
+        except (TypeError, ValueError):
+            longitude_estab = -41.7486655
+            
+        try:
+            if raio_permitido is not None:
+                raio_permitido = float(raio_permitido)
+            else:
+                raio_permitido = 100.0
+        except (TypeError, ValueError):
+            raio_permitido = 100.0
+        
+        # Horário de entrada/saida
+        horario_entrada = '08:00'
+        horario_saida = '17:00'
+        if profissional.horario_entrada:
+            try:
+                horario_entrada = profissional.horario_entrada.strftime('%H:%M')
+            except:
+                pass
+                
+        if profissional.horario_saida:
+            try:
+                horario_saida = profissional.horario_saida.strftime('%H:%M')
+            except:
+                pass
+        
+        # Profissão
+        profissao_nome = 'Não informado'
+        if profissional.profissao and hasattr(profissional.profissao, 'profissao'):
+            try:
+                profissao_nome = profissional.profissao.profissao
+            except:
+                pass
+        
+        response_data = {
             'sucesso': True,
             'mensagem': 'Profissional encontrado',
             'dados': {
@@ -183,28 +234,31 @@ def verificar_cpf_mobile(request):
                 'nome_completo': f"{profissional.nome}",
                 'cpf': profissional.cpf,
                 'cpf_limpo': cpf,
-                'profissao': profissional.profissao.profissao if profissional.profissao else 'Não informado',
+                'profissao': profissao_nome,
                 'estabelecimento_id': estabelecimento.id,
                 'estabelecimento_nome': estabelecimento.nome,
-                'endereco': estabelecimento.endereco,
+                'endereco': estabelecimento.endereco if estabelecimento.endereco else '',
                 'proximo_tipo': proximo_tipo,
                 'proximo_tipo_formatado': 'ENTRADA' if proximo_tipo == 'ENTRADA' else 'SAÍDA',
-                'horario_entrada': profissional.horario_entrada.strftime('%H:%M') if profissional.horario_entrada else '08:00',
-                'horario_saida': profissional.horario_saida.strftime('%H:%M') if profissional.horario_saida else '17:00',
-                'tolerancia_minutos': profissional.tolerancia_minutos or 10,
-                'registros_hoje': registros_hoje,
-                'latitude_estabelecimento': estabelecimento.latitude,
-                'longitude_estabelecimento': estabelecimento.longitude,
-                'raio_permitido': estabelecimento.raio_permitido
+                'horario_entrada': horario_entrada,
+                'horario_saida': horario_saida,
+                'tolerancia_minutos': int(profissional.tolerancia_minutos) if profissional.tolerancia_minutos else 10,
+                'registros_hoje': registros_hoje.count(),
+                'latitude_estabelecimento': latitude_estab,
+                'longitude_estabelecimento': longitude_estab,
+                'raio_permitido': raio_permitido
             },
             'timestamp': timezone.now().isoformat()
-        })
+        }
         
-    except Exception:
-        logger.error("Erro interno em verificar_cpf_mobile")
+        logger.info(f"✅ Resposta: {response_data}")
+        return Response(response_data)
+        
+    except Exception as e:
+        logger.error(f"❌ Erro em verificar_cpf_mobile: {str(e)}", exc_info=True)
         return Response({
             'sucesso': False,
-            'erro': 'Erro interno no servidor'
+            'erro': f'Erro interno: {str(e)}'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
