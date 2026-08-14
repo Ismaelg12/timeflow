@@ -20,9 +20,11 @@ class RegistroPontoSimpleAdmin(admin.ModelAdmin):
         'estabelecimento'
     ]
     
+    # ⚠️ CORRIGIDO: Profissional não tem campo 'user' (não é ligado a auth.User),
+    # a busca anterior ('profissional__user__first_name'/'last_name') quebrava o admin.
     search_fields = [
-        'profissional__user__first_name',
-        'profissional__user__last_name',
+        'profissional__nome',
+        'profissional__cpf',
         'estabelecimento__nome'
     ]
     

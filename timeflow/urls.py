@@ -22,6 +22,7 @@ urlpatterns = [
     
     # Logout
     path('sair/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
+    path('afd/', include('afd.urls')),
 ]
 
 if settings.DEBUG:

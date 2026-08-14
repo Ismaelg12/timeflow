@@ -14,7 +14,7 @@ from django.views.decorators.http import require_POST
 
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from estabelecimentos.models import Estabelecimento
@@ -46,9 +46,14 @@ JUSTIFICATIVAS_PREDEFINIDAS = [
 class RegistroPontoViewSet(viewsets.ModelViewSet):
     queryset = RegistroPonto.objects.all()
     serializer_class = RegistroPontoSerializer
-    permission_classes = [AllowAny]
-    
-    @action(detail=False, methods=['post'])
+    # ⚠️ CORRIGIDO: antes estava AllowAny para o ViewSet inteiro, o que deixava
+    # list/create/update/delete de QUALQUER registro de ponto abertos sem login.
+    # Agora só quem está autenticado pode usar os endpoints padrão do ViewSet.
+    # A action 'registrar' (usada pelo app de bater ponto via CPF) continua
+    # aberta de propósito, com permission_classes própria abaixo.
+    permission_classes = [IsAuthenticated]
+
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def registrar(self, request):
         """API para registro de ponto via mobile"""
         serializer = RegistroPontoCreateSerializer(data=request.data)
@@ -358,7 +363,7 @@ def ajuste_manual_registro(request, profissional_id=None):
                     f"Registro {tipo_registro.lower()} ajustado com sucesso para {profissional.nome} "
                     f"em {data_registro.strftime('%d/%m/%Y')} às {horario_registro.strftime('%H:%M')}.")
                 
-                return redirect('ponto:lista_ajustes_manuais')
+                return redirect('lista_ajustes_manuais')
                 
             except Exception as e:
                 messages.error(request, f"Erro ao ajustar registro: {str(e)}")
@@ -416,180 +421,6 @@ def lista_ajustes_manuais(request):
     return render(request, 'ponto/lista_ajustes_manuais.html', {
         'ajustes': ajustes
     })
-
-# ============================================================================
-# NOVAS VIEWS PARA REGISTRO MANUAL DE SAÍDA
-# ============================================================================
-
-@login_required
-@user_passes_test(lambda u: u.is_superuser or u.is_staff)
-@require_POST
-def registro_manual_saida(request):
-    """
-    View ESPECÍFICA para registrar APENAS SAÍDA manualmente
-    """
-    try:
-        # Extrair dados do formulário
-        profissional_id = request.POST.get('profissional_id')
-        data_str = request.POST.get('data')
-        horario_saida_str = request.POST.get('horario_saida')
-        justificativa = request.POST.get('justificativa')
-        justificativa_outro = request.POST.get('justificativa_outro', '')
-        observacoes = request.POST.get('observacoes', '')
-        
-        # Log dos dados recebidos para debug
-        logger.info(f"Registro manual saída - Dados recebidos: profissional_id={profissional_id}, data={data_str}, horario={horario_saida_str}, justificativa={justificativa}")
-        
-        # Validações básicas
-        if not all([profissional_id, data_str, horario_saida_str, justificativa]):
-            messages.error(request, "❌ Todos os campos obrigatórios devem ser preenchidos.")
-            return redirect(request.META.get('HTTP_REFERER', 'core:dashboard'))
-        
-        if justificativa == 'OUTRO' and not justificativa_outro:
-            messages.error(request, "❌ É necessário especificar a justificativa quando selecionar 'Outro'.")
-            return redirect(request.META.get('HTTP_REFERER', 'core:dashboard'))
-        
-        # Converter dados
-        profissional = get_object_or_404(Profissional, id=profissional_id)
-        data_obj = datetime.strptime(data_str, '%Y-%m-%d').date()
-        horario_saida = datetime.strptime(horario_saida_str, '%H:%M').time()
-        
-        # ✅ Verificar se já tem saída neste dia
-        saida_existente = RegistroPonto.objects.filter(
-            profissional=profissional,
-            data=data_obj,
-            tipo='SAIDA'
-        ).exists()
-        
-        if saida_existente:
-            messages.warning(request, 
-                f"⚠️ Já existe uma saída registrada para {profissional.nome} em {data_obj.strftime('%d/%m/%Y')}. "
-                f"Para alterar, delete a saída existente primeiro.")
-            return redirect('core:relatorio_profissional', profissional_id=profissional_id)
-        
-        # ✅ Verificar entrada do dia
-        entrada = RegistroPonto.objects.filter(
-            profissional=profissional,
-            data=data_obj,
-            tipo='ENTRADA'
-        ).order_by('-horario').first()
-        
-        if not entrada:
-            messages.error(request, 
-                f"❌ Não foi encontrada entrada registrada para {data_obj.strftime('%d/%m/%Y')}. "
-                f"É necessário registrar entrada primeiro.")
-            return redirect('core:relatorio_profissional', profissional_id=profissional_id)
-        
-        # ✅ Verificar se a saída é anterior à entrada (erro lógico)
-        entrada_dt = datetime.combine(data_obj, entrada.horario)
-        saida_dt = datetime.combine(data_obj, horario_saida)
-        
-        if saida_dt <= entrada_dt:
-            messages.error(request,
-                f"❌ O horário da saída ({horario_saida_str}) deve ser posterior ao horário da entrada "
-                f"({entrada.horario.strftime('%H:%M')}).")
-            return redirect('core:relatorio_profissional', profissional_id=profissional_id)
-        
-        # ✅ Calcular se saída é antecipada
-        saida_antecipada_minutos = 0
-        dentro_tolerancia = True
-        
-        if profissional.horario_saida:
-            # Converter para datetime para cálculo
-            horario_previsto_dt = datetime.combine(data_obj, profissional.horario_saida)
-            
-            if saida_dt < horario_previsto_dt:
-                diferenca = horario_previsto_dt - saida_dt
-                saida_antecipada_minutos = int(diferenca.total_seconds() / 60)
-                dentro_tolerancia = saida_antecipada_minutos <= (profissional.tolerancia_minutos or 10)
-        
-        # ✅ Completar justificativa
-        if justificativa == 'OUTRO' and justificativa_outro:
-            justificativa_completa = f"OUTRO: {justificativa_outro}"
-        else:
-            # Buscar o texto da justificativa predefinida
-            justificativas_dict = dict(JUSTIFICATIVAS_PREDEFINIDAS[1:])  # Remove opção vazia
-            justificativa_completa = justificativas_dict.get(justificativa, justificativa)
-        
-        # ✅ Preparar observações completas
-        obs_completas = []
-        if observacoes:
-            obs_completas.append(observacoes)
-        obs_completas.append(f"Justificativa: {justificativa_completa}")
-        
-        # ✅ Criar registro no histórico de ajustes manuais
-        registro_manual = RegistroManual(
-            profissional=profissional,
-            data=data_obj,
-            horario=horario_saida,
-            tipo='SAIDA',
-            motivo=justificativa,
-            descricao='\n'.join(obs_completas),
-            ajustado_por=request.user,
-            latitude=0,
-            longitude=0
-        )
-        registro_manual.save()
-        
-        # ✅ Calcular horas trabalhadas
-        horas_trabalhadas_timedelta = saida_dt - entrada_dt
-        horas_trabalhadas = horas_trabalhadas_timedelta.total_seconds() / 3600
-        
-        # ✅ Criar registro de ponto REAL (aparece nos relatórios)
-        registro_ponto = RegistroPonto(
-            profissional=profissional,
-            estabelecimento=entrada.estabelecimento,  # Usar mesmo estabelecimento da entrada
-            data=data_obj,
-            horario=horario_saida,
-            tipo='SAIDA',
-            latitude=0,  # GPS não disponível para ajuste manual
-            longitude=0,
-            atraso_minutos=0,  # Atraso só se aplica a entrada
-            saida_antecipada_minutos=saida_antecipada_minutos,
-            dentro_tolerancia=dentro_tolerancia,
-            ajuste_manual=True,
-            justificativa_ajuste=justificativa_completa,
-            observacoes='\n'.join(obs_completas)
-        )
-        registro_ponto.save()
-        
-        # ✅ Log do registro para auditoria
-        logger.info(f"Registro manual criado: Profissional={profissional.nome}, Data={data_str}, "
-                   f"Horário={horario_saida_str}, Justificativa={justificativa_completa}, "
-                   f"Admin={request.user.username}")
-        
-        # ✅ Mensagem de sucesso detalhada
-        msg_detalhes = []
-        
-        if saida_antecipada_minutos > 0:
-            if dentro_tolerancia:
-                msg_detalhes.append(f"saída antecipada de {saida_antecipada_minutos}min (dentro da tolerância)")
-            else:
-                msg_detalhes.append(f"saída antecipada de {saida_antecipada_minutos}min (fora da tolerância)")
-        
-        horas_trabalhadas_formatada = f"{int(horas_trabalhadas)}h{int((horas_trabalhadas % 1) * 60)}min"
-        msg_detalhes.append(f"jornada de {horas_trabalhadas_formatada}")
-        
-        detalhes_str = " - ".join(msg_detalhes)
-        
-        messages.success(request,
-            f"✅ Saída registrada para {profissional.nome} em "
-            f"{data_obj.strftime('%d/%m/%Y')} às {horario_saida.strftime('%H:%M')}. "
-            f"({detalhes_str}) | Justificativa: {justificativa_completa}")
-        
-        # ✅ Redirecionar de volta para o relatório
-        return redirect('core:relatorio_profissional', profissional_id=profissional_id)
-        
-    except Profissional.DoesNotExist:
-        messages.error(request, "❌ Profissional não encontrado.")
-    except ValueError as e:
-        messages.error(request, f"❌ Erro no formato dos dados: {str(e)}")
-    except Exception as e:
-        logger.error(f"Erro crítico no registro manual: {str(e)}", exc_info=True)
-        messages.error(request, f"❌ Erro ao registrar saída: {str(e)}")
-    
-    # Se ocorrer erro, voltar para a página anterior
-    return redirect(request.META.get('HTTP_REFERER', 'core:dashboard'))
 
 
 @login_required
@@ -1047,3 +878,166 @@ def registro_manual_saida(request):
         messages.error(request, f"❌ Erro ao registrar saída: {str(e)}")
     
     return redirect(request.META.get('HTTP_REFERER', 'core:dashboard'))
+
+# ============================================================================
+# NOVO: EXTRATO DO BANCO DE HORAS
+# ============================================================================
+
+from .banco_horas import calcular_extrato_banco_horas
+
+
+@login_required
+def extrato_banco_horas(request, profissional_id=None):
+    """
+    Exibe o extrato do banco de horas: saldo total em destaque + extrato dia a dia.
+    """
+    if profissional_id:
+        if not (request.user.is_staff or request.user.is_superuser):
+            messages.error(request, 'Você não tem permissão para ver o banco de horas de outro profissional.')
+            return redirect('extrato_banco_horas')
+        profissional = get_object_or_404(Profissional, id=profissional_id)
+    else:
+        # AJUSTE AQUI conforme como Profissional se relaciona com o User logado.
+        profissional = get_object_or_404(Profissional, cpf=request.user.username)
+
+    hoje = timezone.now().date()
+    data_inicio_str = request.GET.get('data_inicio')
+    data_fim_str = request.GET.get('data_fim')
+
+    if data_inicio_str and data_fim_str:
+        data_inicio = datetime.strptime(data_inicio_str, '%Y-%m-%d').date()
+        data_fim = datetime.strptime(data_fim_str, '%Y-%m-%d').date()
+    else:
+        data_inicio = hoje.replace(day=1)
+        data_fim = hoje
+
+    extrato = calcular_extrato_banco_horas(profissional, data_inicio, data_fim)
+
+    return render(request, 'ponto/extrato_banco_horas.html', {
+        'profissional': profissional,
+        'extrato': extrato,
+        'data_inicio': data_inicio,
+        'data_fim': data_fim,
+    })
+
+
+# ============================================================================
+# NOVO: TELA PÚBLICA DE BATER PONTO (conecta registro_ponto.html/ponto_simples.html
+# à mesma lógica já usada pela API DRF em RegistroPontoViewSet.registrar)
+# ============================================================================
+
+def _validar_localizacao_publica(estabelecimento, lat, lng):
+    """Mesma regra de validação de raio usada no ViewSet (duplicada aqui de
+    propósito para a view clássica não depender do DRF)."""
+    try:
+        lat_diff = estabelecimento.latitude - float(lat)
+        lng_diff = estabelecimento.longitude - float(lng)
+        distancia = (lat_diff ** 2 + lng_diff ** 2) ** 0.5 * 111000
+        return distancia <= estabelecimento.raio_permitido
+    except (TypeError, ValueError):
+        return False
+
+
+def verificar_cpf_api(request):
+    """
+    GET /ponto/api/ponto/verificar-cpf/?cpf=xxxxx
+    Usada via AJAX pela tela de bater ponto para validar o CPF digitado
+    e devolver o(s) estabelecimento(s) do profissional.
+    """
+    cpf = request.GET.get('cpf', '')
+    cpf_digitos = ''.join(filter(str.isdigit, cpf))
+
+    profissional = Profissional.objects.filter(
+        cpf__in=[cpf, cpf_digitos], ativo=True
+    ).first()
+
+    if not profissional:
+        return JsonResponse({'valido': False, 'mensagem': 'CPF não encontrado ou cadastro ainda não aprovado.'})
+
+    if not profissional.estabelecimento:
+        return JsonResponse({'valido': False, 'mensagem': 'Profissional sem estabelecimento vinculado. Fale com o RH.'})
+
+    return JsonResponse({
+        'valido': True,
+        'mensagem': f'Bem-vindo(a), {profissional.nome}!',
+        'estabelecimentos': [{
+            'id': profissional.estabelecimento.id,
+            'nome': profissional.estabelecimento.nome,
+        }],
+    })
+
+
+def registrar_ponto(request):
+    """
+    GET  /ponto/tela-registro/  -> exibe o formulário (registro_ponto.html)
+    POST /ponto/tela-registro/  -> processa o registro de entrada/saída
+    """
+    contexto = {}
+
+    if request.method == 'POST':
+        cpf = request.POST.get('cpf', '')
+        cpf_digitos = ''.join(filter(str.isdigit, cpf))
+        estabelecimento_id = request.POST.get('estabelecimento_id')
+        latitude = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
+
+        try:
+            profissional = Profissional.objects.filter(
+                cpf__in=[cpf, cpf_digitos], ativo=True
+            ).get()
+            estabelecimento = Estabelecimento.objects.get(id=estabelecimento_id)
+
+            if not _validar_localizacao_publica(estabelecimento, latitude, longitude):
+                contexto['erro'] = 'Você está fora do raio permitido para registrar o ponto neste estabelecimento.'
+                return render(request, 'ponto/registro_ponto.html', contexto)
+
+            hoje = timezone.now().date()
+            horario_atual = timezone.now().time()
+            tipo = determinar_proximo_tipo(profissional, estabelecimento, hoje)
+
+            if verificar_registro_duplicado(profissional, estabelecimento, hoje, tipo):
+                tipo_oposto = 'SAIDA' if tipo == 'ENTRADA' else 'ENTRADA'
+                contexto['erro'] = f'Registro duplicado. Próximo registro esperado: {tipo_oposto.lower()}.'
+                return render(request, 'ponto/registro_ponto.html', contexto)
+
+            minutos, dentro_tolerancia = calcular_tolerancia(profissional, horario_atual, tipo)
+
+            registro = RegistroPonto.objects.create(
+                profissional=profissional,
+                estabelecimento=estabelecimento,
+                data=hoje,
+                horario=horario_atual,
+                tipo=tipo,
+                latitude=latitude or 0,
+                longitude=longitude or 0,
+                atraso_minutos=minutos if tipo == 'ENTRADA' else 0,
+                saida_antecipada_minutos=minutos if tipo == 'SAIDA' else 0,
+                dentro_tolerancia=dentro_tolerancia,
+            )
+
+            if dentro_tolerancia:
+                mensagem = 'Registro realizado com sucesso!'
+            elif tipo == 'ENTRADA':
+                mensagem = f'Entrada registrada com {minutos}min de atraso.'
+            else:
+                mensagem = f'Saída registrada com {minutos}min de antecipação.'
+
+            contexto.update({
+                'sucesso': True,
+                'registro': registro,
+                'profissional': profissional,
+                'tipo': registro.get_tipo_display(),
+                'horario': horario_atual,
+                'estabelecimento': estabelecimento,
+                'mensagem': mensagem,
+            })
+
+        except Profissional.DoesNotExist:
+            contexto['erro'] = 'CPF não encontrado ou cadastro ainda não aprovado.'
+        except Estabelecimento.DoesNotExist:
+            contexto['erro'] = 'Estabelecimento inválido.'
+        except Exception:
+            logger.exception('Erro ao registrar ponto pela tela pública')
+            contexto['erro'] = 'Erro interno ao registrar o ponto. Tente novamente.'
+
+    return render(request, 'ponto/registro_ponto.html', contexto)

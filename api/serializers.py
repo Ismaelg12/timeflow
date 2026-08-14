@@ -77,16 +77,17 @@ class RegistroPontoSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request:
             base_url = request.build_absolute_uri('/')
-            return f"{base_url}api/comprovante/{obj.id}/qr-code/"
+            return f"{base_url}api/comprovante/{obj.codigo_validacao}/qr-code/"
         return None
 
 
 class RegistroPontoCreateSerializer(serializers.Serializer):
     cpf = serializers.CharField(max_length=11, min_length=11)
+    estabelecimento_id = serializers.IntegerField()
     latitude = serializers.FloatField()
     longitude = serializers.FloatField()
     biom_hash = serializers.CharField(required=False, allow_blank=True, max_length=255)
-    
+ 
     def validate_cpf(self, value):
         if not value.isdigit():
             raise serializers.ValidationError("CPF deve conter apenas números")

@@ -14,16 +14,23 @@ from django.utils import timezone
 from ponto.models import RegistroPonto
 from usuarios.models import Profissional
 
+# ⚠️ CORRIGIDO: todas as 4 views abaixo agora buscam por 'codigo_validacao'
+# (UUID não adivinhável) em vez de 'registro_id' (inteiro sequencial).
+# Antes, qualquer um podia varrer /api/comprovante/1/, /2/, /3/... e obter
+# CPF, nome e GPS de qualquer funcionário. Continuam AllowAny de propósito
+# (o funcionário vê o comprovante na hora, sem precisar logar de novo no
+# totem/celular), mas agora só quem TEM o código específico do registro
+# consegue acessar os dados dele.
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def comprovante_completo(request, registro_id):
+def comprovante_completo(request, codigo):
     """Retorna comprovante completo com QR Code incluído"""
     
     try:
-        registro = get_object_or_404(RegistroPonto, id=registro_id)
+        registro = get_object_or_404(RegistroPonto, codigo_validacao=codigo)
         profissional = registro.profissional
         
-        # Obter horários cadastrados do profissional
         hora_entrada_cadastrada = None
         hora_saida_cadastrada = None
         
@@ -33,7 +40,6 @@ def comprovante_completo(request, registro_id):
         if profissional.horario_saida:
             hora_saida_cadastrada = profissional.horario_saida.strftime('%H:%M')
         
-        # Dados do comprovante conforme Portaria 671
         comprovante = {
             "codigo_registro": f"TF-{registro.id:08d}",
             "empresa_cnpj": registro.estabelecimento.cnpj if hasattr(registro.estabelecimento, 'cnpj') else "",
@@ -52,19 +58,14 @@ def comprovante_completo(request, registro_id):
             "saida_antecipada_minutos": registro.saida_antecipada_minutos,
             "status": "DENTRO DA TOLERÂNCIA" if registro.dentro_tolerancia else "FORA DA TOLERÂNCIA",
             "data_geracao": datetime.now().strftime('%d/%m/%Y %H:%M:%S'),
-            
-            # NOVOS CAMPOS ADICIONADOS
             "hora_entrada_cadastrada": hora_entrada_cadastrada,
             "hora_saida_cadastrada": hora_saida_cadastrada,
             "tolerancia_minutos": profissional.tolerancia_minutos if hasattr(profissional, 'tolerancia_minutos') else 10,
             "profissao": str(profissional.profissao) if profissional.profissao else "Não informada",
-            
-            # Adicionar também as horas formatadas (sem segundos) para exibição
             "hora_formatada": registro.horario.strftime('%H:%M'),
-            "url_validacao": f"{request.build_absolute_uri('/')}api/validar/{registro.id}/",
+            "url_validacao": f"{request.build_absolute_uri('/')}api/comprovante/{registro.codigo_validacao}/validar/",
         }
         
-        # Gerar QR Code
         qr = qrcode.QRCode(
             version=1,
             error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -79,7 +80,7 @@ def comprovante_completo(request, registro_id):
             'funcionario_cpf': comprovante['funcionario_cpf'],
             'funcionario_nome': comprovante['funcionario_nome'],
             'data': comprovante['data'],
-            'hora': comprovante['hora_formatada'],  # Usar hora formatada sem segundos
+            'hora': comprovante['hora_formatada'],
             'tipo': comprovante['tipo'],
             'horario_cadastrado': hora_entrada_cadastrada if registro.tipo == 'ENTRADA' else hora_saida_cadastrada,
             'latitude': comprovante['latitude'],
@@ -106,15 +107,15 @@ def comprovante_completo(request, registro_id):
             'erro': f'Erro ao gerar comprovante: {str(e)}'
         }, status=500)
 
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def gerar_comprovante_pdf(request, registro_id):
+def gerar_comprovante_pdf(request, codigo):
     """Gera JSON do comprovante (pode ser convertido para PDF depois)"""
     try:
-        registro = get_object_or_404(RegistroPonto, id=registro_id)
+        registro = get_object_or_404(RegistroPonto, codigo_validacao=codigo)
         profissional = registro.profissional
         
-        # Obter horários cadastrados
         hora_entrada_cadastrada = None
         hora_saida_cadastrada = None
         
@@ -143,13 +144,11 @@ def gerar_comprovante_pdf(request, registro_id):
             "saida_antecipada_minutos": registro.saida_antecipada_minutos,
             "status": "DENTRO DA TOLERÂNCIA" if registro.dentro_tolerancia else "FORA DA TOLERÂNCIA",
             "data_geracao": datetime.now().strftime('%d/%m/%Y %H:%M:%S'),
-            
-            # NOVOS CAMPOS
             "hora_entrada_cadastrada": hora_entrada_cadastrada,
             "hora_saida_cadastrada": hora_saida_cadastrada,
             "tolerancia_minutos": profissional.tolerancia_minutos if hasattr(profissional, 'tolerancia_minutos') else 10,
             "profissao": str(profissional.profissao) if profissional.profissao else "Não informada",
-            "url_validacao": f"{request.build_absolute_uri('/')}api/validar/{registro.id}/",
+            "url_validacao": f"{request.build_absolute_uri('/')}api/comprovante/{registro.codigo_validacao}/validar/",
         }
         
         return JsonResponse({
@@ -165,15 +164,15 @@ def gerar_comprovante_pdf(request, registro_id):
             'erro': f'Erro ao gerar PDF: {str(e)}'
         }, status=500)
 
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def gerar_qr_code(request, registro_id):
+def gerar_qr_code(request, codigo):
     """Gera QR Code com dados do registro"""
     try:
-        registro = get_object_or_404(RegistroPonto, id=registro_id)
+        registro = get_object_or_404(RegistroPonto, codigo_validacao=codigo)
         profissional = registro.profissional
         
-        # Obter horários cadastrados
         hora_entrada_cadastrada = None
         hora_saida_cadastrada = None
         
@@ -183,7 +182,6 @@ def gerar_qr_code(request, registro_id):
         if profissional.horario_saida:
             hora_saida_cadastrada = profissional.horario_saida.strftime('%H:%M')
         
-        # Dados que vão no QR Code
         qr_data = {
             'id': registro.id,
             'codigo': f"TF-{registro.id:08d}",
@@ -194,19 +192,14 @@ def gerar_qr_code(request, registro_id):
             'data': registro.data.strftime('%d/%m/%Y'),
             'hora': registro.horario.strftime('%H:%M'),
             'tipo': registro.tipo,
-            
-            # Adicionar horários cadastrados
             'horario_entrada_cadastrado': hora_entrada_cadastrada,
             'horario_saida_cadastrado': hora_saida_cadastrada,
-            
             'status': 'VALIDO' if registro.dentro_tolerancia else 'ATRASO',
-            'url_validacao': f"{request.build_absolute_uri('/')}api/validar/{registro.id}/",
+            'url_validacao': f"{request.build_absolute_uri('/')}api/comprovante/{registro.codigo_validacao}/validar/",
         }
         
-        # Converter para string JSON
         qr_text = json.dumps(qr_data, ensure_ascii=False)
         
-        # Gerar QR Code
         qr = qrcode.QRCode(
             version=1,
             error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -216,10 +209,8 @@ def gerar_qr_code(request, registro_id):
         qr.add_data(qr_text)
         qr.make(fit=True)
         
-        # Criar imagem
         img = qr.make_image(fill_color="black", back_color="white")
         
-        # Converter para base64
         buffered = BytesIO()
         img.save(buffered, format="PNG")
         img_str = base64.b64encode(buffered.getvalue()).decode()
@@ -238,15 +229,15 @@ def gerar_qr_code(request, registro_id):
             'erro': f'Erro ao gerar QR Code: {str(e)}'
         }, status=500)
 
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def validar_registro(request, registro_id):
+def validar_registro(request, codigo):
     """API para validar um registro via QR Code"""
     try:
-        registro = get_object_or_404(RegistroPonto, id=registro_id)
+        registro = get_object_or_404(RegistroPonto, codigo_validacao=codigo)
         profissional = registro.profissional
         
-        # Obter horários cadastrados
         hora_entrada_cadastrada = None
         hora_saida_cadastrada = None
         
@@ -269,11 +260,8 @@ def validar_registro(request, registro_id):
             'hora': registro.horario.strftime('%H:%M'),
             'hora_completa': registro.horario.strftime('%H:%M:%S'),
             'tipo': registro.tipo,
-            
-            # Adicionar horários cadastrados na validação
             'horario_entrada_cadastrado': hora_entrada_cadastrada,
             'horario_saida_cadastrado': hora_saida_cadastrada,
-            
             'dentro_tolerancia': registro.dentro_tolerancia,
             'atraso_minutos': registro.atraso_minutos,
             'saida_antecipada_minutos': registro.saida_antecipada_minutos,

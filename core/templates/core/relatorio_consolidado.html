@@ -95,57 +95,19 @@
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card text-white {% if diferenca_horas.total_seconds >= 0 %}bg-warning{% else %}bg-danger{% endif %}">
-                    <div class="card-body text-center">
-                        <h6>Saldo de Horas</h6>
-                        <h4>{{ diferenca_horas }}</h4>
-                        <small>
-                            {% if diferenca_horas.total_seconds >= 0 %}+{% endif %}
-                            vs esperado
-                        </small>
+                <a href="{% url 'extrato_banco_horas_profissional' profissional.id %}" class="text-decoration-none">
+                    <div class="card text-white bg-dark h-100">
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <h6 class="mb-1"><i class="fas fa-balance-scale"></i> Banco de Horas</h6>
+                            <small>Ver saldo acumulado →</small>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
         </div>
 
         <!-- Detalhamento -->
         <div class="row">
-            <!-- Horas Trabalhadas -->
-            <div class="col-md-6 mb-4">
-                <div class="card">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0">
-                            <i class="fas fa-clock"></i> Horas Trabalhadas
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-sm">
-                            <tr>
-                                <td><strong>Horas Trabalhadas:</strong></td>
-                                <td>{{ horas_trabalhadas }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Horas Esperadas:</strong></td>
-                                <td>{{ horas_esperadas }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Saldo:</strong></td>
-                                <td>
-                                    <span class="badge {% if diferenca_horas.total_seconds >= 0 %}bg-success{% else %}bg-danger{% endif %}">
-                                        {{ diferenca_horas }}
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>Carga Horária Diária:</strong></td>
-                                <td>{{ carga_horaria_diaria }}</td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Frequência -->
             <div class="col-md-6 mb-4">
                 <div class="card">
                     <div class="card-header bg-light">
@@ -226,19 +188,16 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <div class="alert 
-                            {% if diferenca_horas.total_seconds >= 0 and faltas == 0 %}alert-success
-                            {% elif diferenca_horas.total_seconds >= 0 %}alert-warning
-                            {% else %}alert-danger
-                            {% endif %}">
+                        <div class="alert {% if faltas == 0 %}alert-success{% else %}alert-warning{% endif %}">
                             <h6>Situação:</h6>
-                            {% if diferenca_horas.total_seconds >= 0 and faltas == 0 %}
-                                <p class="mb-0">✅ Dentro das expectativas - Horas positivas e sem faltas</p>
-                            {% elif diferenca_horas.total_seconds >= 0 %}
-                                <p class="mb-0">⚠️ Horas positivas, mas com {{ faltas }} falta(s)</p>
+                            {% if faltas == 0 %}
+                                <p class="mb-0">✅ Sem faltas no período</p>
                             {% else %}
-                                <p class="mb-0">❌ Atenção - Horas negativas e {{ faltas }} falta(s)</p>
+                                <p class="mb-0">⚠️ {{ faltas }} falta(s) no período</p>
                             {% endif %}
+                            <p class="mb-0 mt-2">
+                                <a href="{% url 'extrato_banco_horas_profissional' profissional.id %}">Ver saldo de horas acumulado →</a>
+                            </p>
                         </div>
                     </div>
                 </div>
