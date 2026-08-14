@@ -2,135 +2,183 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <title>Entrar</title>
+    <title>Entrar - TimeFlow</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/png" href="{% static "assets/img/favicon.png" %}"/>
-    <link rel="stylesheet" href="{% static "login/fonts/font-awesome-4.7.0/css/font-awesome.min.css" %}">
-    <link rel="stylesheet" href="{% static "login/css/main.css" %}">
-    <link rel='stylesheet' href='https://netdna.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css'>
-    <style type="text/css">
-        .btn-dark-gray {
-            color: #fff;
-            background-color: #333;
-            border-color: #333;
-            border-radius: 25px;
-            width: 100%;
-        }
+    <style>
+        * { box-sizing: border-box; }
 
-        .btn-dark-gray:hover {
-            background-color: #32CD32;
-            border-color: #32CD32;
-        }
-        
-        .btn-cadastro {
-            color: #fff;
-            background-color: #28a745;
-            border-color: #28a745;
-            border-radius: 25px;
-            width: 100%;
-        }
-
-        .btn-cadastro:hover {
-            background-color: #218838;
-            border-color: #1e7e34;
-        }
-        
-        .button-group {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 25px;
-        }
-        
-        .login-card {
-            max-width: 400px;
-            width: 100%;
-            margin: 0 auto;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        
-        .form-title {
-            text-align: center;
-            margin-bottom: 30px;
-            font-weight: bold;
-            color: #333;
-        }
-        
-        .forgot-password {
-            text-align: center;
-            margin-top: 20px;
-            margin-bottom: 25px;
-        }
-        
-        .container-center {
+        body {
+            margin: 0;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             padding: 20px;
+        }
+
+        .login-card {
+            max-width: 400px;
+            width: 100%;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            padding: 2.5rem 2rem;
+        }
+
+        .form-title {
+            text-align: center;
+            margin-bottom: 1.75rem;
+        }
+
+        .form-title h3 {
+            margin: 0 0 0.25rem;
+            font-weight: 700;
+            color: #1e2340;
+            font-size: 1.5rem;
+        }
+
+        .form-title p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .alert-danger {
+            background: #fdeef1;
+            color: #c1305a;
+            border: 1px solid #f6d3dd;
+        }
+
+        .alert-success {
+            background: #e3fbf3;
+            color: #0a8a68;
+            border: 1px solid #b7f0dd;
+        }
+
+        .input-wrap {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .input-wrap svg {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a6acc2;
+            pointer-events: none;
+        }
+
+        .input-wrap input {
+            width: 100%;
+            padding: 0.85rem 1rem 0.85rem 2.75rem;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            background: #fbfbfd;
+            color: #1e2340;
+        }
+
+        .input-wrap input:focus {
+            outline: none;
+            border-color: #4361ee;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.12);
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 0.85rem;
+            border: none;
+            border-radius: 999px;
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn-entrar {
+            background: #333;
+            color: #fff;
+            margin-top: 0.5rem;
+        }
+
+        .btn-entrar:hover {
+            background: #222;
+        }
+
+        .btn-cadastro {
+            background: #28a745;
+            color: #fff;
+            margin-top: 1.25rem;
+        }
+
+        .btn-cadastro:hover {
+            background: #218838;
         }
     </style>
 </head>
 <body>
-<div class="container-center">
-    <div class="login-card card">
-        <div class="card-body p-5">
-            <div class="form-title">
-                <h3>Bem-vindo ao TimeFlow</h3>
-                <p class="text-muted">Sistema de Controle de Ponto</p>
-            </div>
-            
-            <form class="login100-form validate-form" method='POST'>
-                {% if form.non_field_errors %}
-                    <div class="alert alert-danger" role="alert">
-                        {% for error in form.non_field_errors %}
-                            {{ error }}
-                        {% endfor %}
-                    </div>
-                {% endif %}
-                {% csrf_token %}
-                
-                <div class="wrap-input100 validate-input mb-3" data-validate="Email valido é preciso: user@gmail.com">
-                    <input class="input100" type="text" name="username" placeholder="Nome de Usuário" required>
-                    <span class="focus-input100"></span>
-                    <span class="symbol-input100">
-                        <i class="fa fa-user" aria-hidden="true"></i>
-                    </span>
-                </div>
-                
-                <div class="wrap-input100 validate-input mb-4" data-validate="a senha é obrigatoria">
-                    <input class="input100" type="password" name="password" placeholder="Digite sua Senha" required>
-                    <span class="focus-input100"></span>
-                    <span class="symbol-input100">
-                        <i class="fa fa-lock" aria-hidden="true"></i>
-                    </span>
-                </div>
-                
-                <div class="container-login100-form-btn">
-                    <button class="login100-form-btn btn btn-dark-gray">
-                        <i class="fa fa-sign-in"></i> Entrar
-                    </button>
-                </div>
-            </form>
-            
-            <div class="button-group">
-                <a href="{% url 'usuarios:solicitar_cadastro' %}" class="btn btn-cadastro">
-                    <i class="fa fa-user-plus"></i> Cadastrar Funcionário
-                </a>
-            </div>
-            
-            {% if messages %}
-                <div class="messages mt-4">
-                    {% for message in messages %}
-                        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
+    <div class="login-card">
+        <div class="form-title">
+            <h3>Bem-vindo ao TimeFlow</h3>
+            <p>Sistema de Controle de Ponto</p>
+        </div>
+
+        <form method="POST">
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}{{ error }}{% endfor %}
                 </div>
             {% endif %}
-        </div>
+            {% csrf_token %}
+
+            <div class="input-wrap">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg>
+                <input type="text" name="username" placeholder="Nome de Usuário" required autofocus>
+            </div>
+
+            <div class="input-wrap">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                <input type="password" name="password" placeholder="Digite sua Senha" required>
+            </div>
+
+            <button type="submit" class="btn btn-entrar">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>
+                Entrar
+            </button>
+        </form>
+
+        <a href="{% url 'usuarios:solicitar_cadastro' %}" class="btn btn-cadastro">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
+            Cadastrar Funcionário
+        </a>
+
+        {% if messages %}
+            <div style="margin-top: 1.25rem;">
+                {% for message in messages %}
+                    <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
     </div>
-</div>
 </body>
 </html>
